@@ -15,7 +15,7 @@ Preparation: <i>Download Chromium Source Code Patch</i>
 <h2  align=left><p>You'll need to download the latest Chromium Canary Patch zip package. 
 <div align=center>
 
-[**<i><ins>Beta Patch</ins></i>**](https://github.com/TangramDev/WebRT_Chromium_Canary/archive/refs/heads/main.zip)
+[**<i><ins>Canary Patch</ins></i>**](https://github.com/TangramDev/WebRT_Chromium_Canary/archive/refs/heads/main.zip)
 </div>
   
 Unzip the Patch zip you downloaded.</p>
