@@ -2273,6 +2273,7 @@ void OmniboxEditModel::OnPopupResultChanged() {
       controller()->OnPopupVisibilityChanged();
     }
     HWND hWnd = views::HWNDForNativeView(view_->GetNativeView());
+#define WM_CHROMEOMNIBOXPOPUPVISIBLE (WM_USER + 0x00004046)
     ::PostAppMessage(::GetCurrentThreadId(), WM_CHROMEOMNIBOXPOPUPVISIBLE,
                      (WPARAM)hWnd, (LPARAM)popup_view_->IsOpen());
     // end Add by TangramTeam
