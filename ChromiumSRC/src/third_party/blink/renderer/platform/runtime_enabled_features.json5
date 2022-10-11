@@ -2749,6 +2749,10 @@
       base_feature: "ViewportHeightClientHintHeader",
     },
     {
+      name: "ViewportMetaInteractiveWidgetProperty",
+      status: "experimental",
+    },
+    {
       name: "ViewportSegments",
       status: "experimental",
     },
