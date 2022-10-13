@@ -88,7 +88,7 @@ as shown in the following figure:</p>
 
 <p>execute the following command:
 
-	$ ..\getbranch 108.0.53ab.c WebRTBase
+	$ ..\getbranch 53ab.c WebRTBase
 </p>
 <p>
 	
@@ -108,7 +108,7 @@ WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 108.0.53
 <h2>
 <p>Execute the following command:
 	
-	$ ..\getWebRTbranch 108.0.53xy.z your_branch_name WebRTBase
+	$ ..\getWebRTbranch 53xy.z your_branch_name WebRTBase
 Here, WebRTBase is the source code branch that supports WebRuntime created in the above steps, and x,y and z are are integers, you will obtain a branch with webruntime support you expected.
 </p>
 </h2>
