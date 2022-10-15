@@ -31,7 +31,7 @@ How to Use <i>
 
 [ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>
 </h1>
-<h2><p>Each Chromium WebRT Patch contains a file "ChromiumVer.txt" to specify the Tag of the Chromium Project version corresponding to the Patch, for example: 108.0.5355.1.</p>
+<h2><p>Each Chromium WebRT Patch contains a file "ChromiumVer.txt" to specify the Tag of the Chromium Project version corresponding to the Patch, for example: 109.0.5360.0.</p>
 </h2>
 
 
@@ -92,7 +92,7 @@ as shown in the following figure:</p>
 </p>
 <p>
 	
-Here, 108.0.53ab.c is the Tag value contained in <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>, and WebRTBase is the branch name of "WebRT Base Branch"</p>
+Here, 109.0.53ab.c is the Tag value contained in <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>, and WebRTBase is the branch name of "WebRT Base Branch"</p>
 
 <p>Copy the folder "ChromiumSRC\src" (this folder is included in the unzipped folder of Chromium WebRT Patch) to "d:\WebRT\M108\src", execute the following command:
 	
@@ -103,7 +103,7 @@ Here, 108.0.53ab.c is the Tag value contained in <i>[ChromiumVer.txt](https://gi
 
 <h1 align=center>
 
-WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 108.0.53xy.z</i>
+WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 109.0.53xy.z</i>
 </h1>
 <h2>
 <p>Execute the following command:
