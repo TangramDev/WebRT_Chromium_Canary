@@ -4,7 +4,7 @@ Working with <i>Latest Chromium Canary Source Code</i>
 <h2  align=left>
 <p>
 
-We designed [OpenWebRuntime](https://github.com/TangramDev/OpenWebRunTime) to work in sync with the latest Chromium Canary Source Code for Chromium Canary Version. To do this, you need to refer to the 
+[OpenWebRuntime](https://github.com/TangramDev/OpenWebRunTime) can work synchronously with the latest Canary version Chromium Project Source Code, to do this, you need to refer to the 
 <div align=center>
 
 [**Building Chromium for Windows**](https://chromium.googlesource.com/chromium/src/+/main/docs/windows_build_instructions.md)</div>
