@@ -1154,8 +1154,8 @@ bool IsAvoidUnnecessaryBeforeUnloadCheckPostTaskEnabled() {
          !IsAvoidUnnecessaryBeforeUnloadCheckSyncEnabled();
 }
 
-// Returns true if `host` has the Window Placement permission granted.
-bool IsWindowPlacementGranted(RenderFrameHost* host) {
+// Returns true if `host` has the Window Management permission granted.
+bool IsWindowManagementGranted(RenderFrameHost* host) {
   content::PermissionController* permission_controller =
       host->GetBrowserContext()->GetPermissionController();
   DCHECK(permission_controller);
@@ -6719,7 +6719,7 @@ void RenderFrameHostImpl::EnterFullscreen(
   // CanEnterFullscreenWithoutUserActivation is only ever true in tests, to
   // allow fullscreen when mocking screen orientation changes.
   if (!delegate_->HasSeenRecentScreenOrientationChange() &&
-      !WindowPlacementAllowsFullscreen() && !HasSeenRecentXrOverlaySetup() &&
+      !WindowManagementAllowsFullscreen() && !HasSeenRecentXrOverlaySetup() &&
       !GetContentClient()
            ->browser()
            ->CanEnterFullscreenWithoutUserActivation()) {
@@ -6758,7 +6758,7 @@ void RenderFrameHostImpl::EnterFullscreen(
           blink::features::kWindowPlacementFullscreenCompanionWindow) &&
       screen && screen->GetNumDisplays() > 1 &&
       screen->GetDisplayWithDisplayId(options->display_id, &display) &&
-      IsWindowPlacementGranted(this)) {
+      IsWindowManagementGranted(this)) {
     transient_allow_popup_.Activate();
   }
 
@@ -8879,24 +8879,6 @@ void RenderFrameHostImpl::OnUnloadTimeout() {
   parent_->RemoveChild(frame_tree_node_);
 }
 
-void RenderFrameHostImpl::UpdateOpener() {
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::UpdateOpener",
-               "render_frame_host", this);
-
-  // This frame (the frame whose opener is being updated) might not have had
-  // proxies for the new opener chain in its SiteInstance.  Make sure they
-  // exist.
-  if (frame_tree_node_->opener()) {
-    frame_tree_node_->opener()->render_manager()->CreateOpenerProxies(
-        GetSiteInstance(), frame_tree_node_, browsing_context_state_);
-  }
-
-  auto opener_frame_token =
-      frame_tree_node_->render_manager()->GetOpenerFrameToken(
-          GetSiteInstance()->group());
-  GetAssociatedLocalFrame()->UpdateOpener(opener_frame_token);
-}
-
 void RenderFrameHostImpl::SetFocusedFrame() {
   GetAssociatedLocalFrame()->Focus();
 }
@@ -10266,8 +10248,8 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     GrantFileAccessFromResourceRequestBody(*request->common_params().post_data);
 }
 
-bool RenderFrameHostImpl::WindowPlacementAllowsFullscreen() {
-  return IsWindowPlacementGranted(this) &&
+bool RenderFrameHostImpl::WindowManagementAllowsFullscreen() {
+  return IsWindowManagementGranted(this) &&
          delegate_->IsTransientAllowFullscreenActive();
 }
 
