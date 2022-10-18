@@ -1236,6 +1236,10 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     }
   }
 
+  if (!event->CanDeserializeIn(this)) {
+    event = MessageEvent::CreateError(event->origin(), event->source());
+  }
+
   if (GetFrame() && GetFrame()->GetPage() &&
       GetFrame()->GetPage()->DispatchedPagehideAndStillHidden() &&
       !document()->UnloadEventInProgress()) {
