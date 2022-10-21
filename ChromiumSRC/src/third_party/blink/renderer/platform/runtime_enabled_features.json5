@@ -733,7 +733,8 @@
     },
     {
       name: "CSSLhUnit",
-      status: "experimental",
+      status: "stable",
+      base_feature: "CSSLhUnit",
     },
     {
       name: "CSSLogical",
@@ -1047,6 +1048,12 @@
     },
     {
       name: "DocumentDomain",
+    },
+    {
+      name: "DocumentOpenSandboxInheritanceRemoval",
+      status: "experimental",
+      base_feature: "DocumentOpenSandboxInheritanceRemoval",
+      copied_from_base_feature_if: "overridden",
     },
     {
       name: "DocumentPictureInPictureAPI",
@@ -1613,6 +1620,7 @@
       name: "MathMLCore",
       status:"experimental",
       depends_on: ["LayoutNG"],
+      base_feature: "MathMLCore",
     },
     {
       name:"MeasureMemory",
@@ -2830,6 +2838,8 @@
       // A kill switch. Please consider removing this after M112.
       name: "WarnSandboxIneffective",
       status: "stable",
+      base_feature: "WarnSandboxIneffective",
+      copied_from_base_feature_if: "overridden",
     },
     {
       name: "WebAnimationsAPI",
@@ -3180,23 +3190,9 @@
       status: "stable",
       base_feature: "WindowOpenNewPopupBehavior",
     },
-    // Extends window placement functionality for multi-screen devices. Also
-    // exposes requisite information about displays connected to the device.
-    {
-      name: "WindowPlacement",
-      status: "stable",
-      base_feature: "WindowPlacement",
-    },
-    // Exposes user-friendly screen labels, determined by the platform, to sites
-    // with window-placement permission.
-    {
-      name: "WindowPlacementEnhancedScreenLabels",
-      status: "stable",
-    },
     // Allows sites to request fullscreen when the set of screens change.
     {
       name: "WindowPlacementFullscreenOnScreensChange",
-      depends_on: ["WindowPlacement"],
       status: "experimental",
       base_feature: "WindowPlacementFullscreenOnScreensChange",
     },
