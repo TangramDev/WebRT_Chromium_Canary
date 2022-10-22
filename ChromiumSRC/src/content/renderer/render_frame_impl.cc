@@ -1520,7 +1520,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       is_for_nested_main_frame, is_for_scalable_page,
       /*hidden=*/true);
   web_frame_widget->InitializeCompositing(
-      agent_scheduling_group.agent_group_scheduler(),
       params->widget_params->visual_properties.screen_infos,
       /*settings=*/nullptr);
 
@@ -1712,7 +1711,6 @@ void RenderFrameImpl::CreateFrame(
         /*is_for_scalable_page=*/!is_for_nested_main_frame,
         /*hidden=*/true);
     web_frame_widget->InitializeCompositing(
-        agent_scheduling_group.agent_group_scheduler(),
         widget_params->visual_properties.screen_infos,
         /*settings=*/nullptr);
 
@@ -1755,7 +1753,6 @@ void RenderFrameImpl::CreateFrame(
         /*is_for_scalable_page=*/false,
         /*hidden=*/true);
     web_frame_widget->InitializeCompositing(
-        agent_scheduling_group.agent_group_scheduler(),
         widget_params->visual_properties.screen_infos,
         /*settings=*/nullptr);
 
