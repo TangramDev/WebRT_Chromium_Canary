@@ -1,1 +1,5 @@
 109.0.5377.1
+
+Support 109.0.5377.1~109.0.5378.0
+
+Based on commit: 599ed4a0d0692a7c003006d838c38be4d45d1bfb
