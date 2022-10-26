@@ -472,6 +472,10 @@
       status: "stable",
     },
     {
+      name: "CaptureController",
+      status: {"Android": "", "default": "experimental"},
+    },
+    {
       name: "CaptureHandle",
       depends_on: ["GetDisplayMedia"],
       status: {"Android": "", "default": "stable"},
@@ -612,7 +616,7 @@
     },
     {
       // Allows positioning a positioned element relative to another one.
-      // https://tabatkins.github.io/specs/css-anchor-position/
+      // https://drafts.csswg.org/css-anchor-1/
       name: "CSSAnchorPositioning",
       status: "experimental",
     },
@@ -2264,6 +2268,10 @@
       // The renderpriority attribute feature.
       // https://github.com/WICG/display-locking/blob/main/explainers/update-rendering.md
       name: "RenderPriorityAttribute"
+    },
+    {
+      name: "ResourceTimingContentType",
+      status: "experimental",
     },
     {
       name: "ResourceTimingResponseStatus",
