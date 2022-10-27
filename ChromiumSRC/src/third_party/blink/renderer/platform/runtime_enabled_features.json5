@@ -736,7 +736,8 @@
     {
       // crbug.com/924069
       name: "CSSHyphenateLimitChars",
-      status: "test",
+      status: "stable",
+      base_feature: "CSSHyphenateLimitChars",
     },
     {
       name: "CSSIcUnit",
@@ -1533,6 +1534,11 @@
       name: "LangAttributeAwareSvgText",
       base_feature: "LangAttributeAwareSvgText",
       status: "stable",
+    },
+    {
+      name: "LayoutMediaNGContainer",
+      // This feature doesn't work in the legacy layout.
+      depends_on: ["LayoutNGPrinting"],
     },
     {
       // LayoutNG has been enabled in M76, but we still keep this flag for
