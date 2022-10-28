@@ -666,13 +666,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) override;
 
-  // Binds `creator_type`, `origin`, `receiver` and the information obtained
-  // from the `rfh` to the NotificationService instance owned by
-  // `storage_partition_impl_`, and is used by documents and workers via
-  // BrowserInterfaceBroker.
+  // Binds |receiver| to the NotificationService instance owned by
+  // |storage_partition_impl_|, and is used by frames and workers via
+  // BrowserInterfaceBroker. |render_frame_id| will identify the RenderFrameHost
+  // when the service belongs to one, `MSG_ROUTING_NONE` for workers.
   void CreateNotificationService(
-      RenderFrameHost* rfh,
-      RenderProcessHost::NotificationServiceCreatorType creator_type,
+      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
       override;
