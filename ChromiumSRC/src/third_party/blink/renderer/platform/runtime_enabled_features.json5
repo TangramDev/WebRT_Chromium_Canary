@@ -2557,6 +2557,11 @@
     {
       "name": "SpeculationRulesPrefetchWithSubresources",
     },
+    // Adds a "referrer_policy" key to speculation rules. See https://crbug.com/1355146
+    {
+      name: "SpeculationRulesReferrerPolicyKey",
+      base_feature: "SpeculationRulesReferrerPolicyKey",
+    },
     {
       name: "SrcsetMaxDensity",
     },
@@ -2750,6 +2755,10 @@
     },
     {
       name: "TrustedTypeBeforePolicyCreationEvent",
+      status: "experimental",
+    },
+    {
+      name: "TrustedTypesFromLiteral",
       status: "experimental",
     },
     {
