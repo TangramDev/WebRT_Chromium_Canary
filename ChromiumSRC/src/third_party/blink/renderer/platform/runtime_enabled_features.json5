@@ -285,7 +285,7 @@
       origin_trial_allows_third_party: true,
       origin_trial_feature_name: "AnonymousIframeOriginTrial",
       public: true,
-      status: "test",
+      status: "experimental",
     },
     {
       name: "AOMAriaRelationshipProperties",
@@ -701,7 +701,7 @@
       // @font-face Font property descriptors auto range.
       // https://www.w3.org/TR/css-fonts-4/#font-prop-desc
       name: "CSSFontFaceAutoVariableRange",
-      status: "test",
+      status: "stable",
     },
     {
       name: "CSSFontFaceSrcTechParsing",
@@ -1116,12 +1116,6 @@
       name: "DocumentPolicySyncXHR",
       status: "experimental",
       depends_on: ["DocumentPolicy"],
-    },
-    {
-      // Document transitions, including shared element transitions.
-      // See https://github.com/WICG/shared-element-transitions
-      name: "DocumentTransition",
-      base_feature: "DocumentTransition",
     },
     {
       name: "DocumentWrite",
@@ -2880,6 +2874,12 @@
     {
       name: "ViewportSegments",
       status: "experimental",
+    },
+    {
+      // View transitions, including view transitions.
+      // See https://www.w3.org/TR/css-view-transitions-1/
+      name: "ViewTransition",
+      base_feature: "ViewTransition",
     },
     {
       name: "VisibilityCollapseColumn",
