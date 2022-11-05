@@ -85,11 +85,11 @@ as shown in the following figure:</p>
 <div align=center id="cmd"><img src="https://user-images.githubusercontent.com/26355688/199431665-1aa299b4-d1ec-4c6d-83ad-865541a214d6.jpg" width="75%"/></div> </p>
 <p>execute the following command:
 
-	$ ..\getbranch 53ab.c Base
+	$ ..\getbranch 54ab.c Base
 </p>
 <p>
 	
-Here, "<ins>109.0.53ab.c</ins>" is the Tag value contained in <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>, and "Base" is the branch name of "Base Branch"</p>
+Here, "<ins>109.0.54ab.c</ins>" is the Tag value contained in <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>, and "Base" is the branch name of "Base Branch"</p>
 
 <p>Copy the folder "ChromiumSRC\src" (this folder is included in the unzipped folder of Chromium WebRT Patch) to "d:\WebRT\M108\src", execute the following command:
 	
@@ -100,12 +100,12 @@ Here, "<ins>109.0.53ab.c</ins>" is the Tag value contained in <i>[ChromiumVer.tx
 
 <h1 align=center>
 
-WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 109.0.53xy.z</i>
+WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 109.0.54xy.z</i>
 </h1>
 <h2>
 <p>Execute the following command:
 	
-	$ ..\getWebRTbranch 53xy.z your_branch_name Base
+	$ ..\getWebRTbranch 54xy.z your_branch_name Base
 Here, "Base" is the source code branch that supports WebRuntime created in the above steps, and x,y and z are are integers, you will obtain a branch with webruntime support you expected.
 </p>
 </h2>
