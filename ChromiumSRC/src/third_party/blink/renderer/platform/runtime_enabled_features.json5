@@ -1014,6 +1014,11 @@
       status: "experimental",
     },
     {
+      name: "DialogNewFocusBehavior",
+      status: "experimental",
+      base_feature: "DialogNewFocusBehavior",
+    },
+    {
       name: "DigitalGoods",
       origin_trial_feature_name: "DigitalGoodsV2",
       origin_trial_os: ["android", "chromeos"],
@@ -1299,6 +1304,11 @@
     },
     {
       name: "FirstPartySets",
+    },
+    {
+      name: "FirstRectForRangeVertical",
+      status: "stable",
+      base_feature: "FirstRectForRangeVertical",
     },
     {
       name: "FixedElementsDontOverscroll",
@@ -2224,6 +2234,11 @@
       name: "QuotaChange",
       status: "experimental",
     },
+    // If enabled, the Accept-Language header will be reduced.
+    {
+      name: "ReduceAcceptLanguage",
+      origin_trial_feature_name: "ReduceAcceptLanguage"
+    },
     // If enabled, the minor version of the User-Agent string will be reduced.
     // This User-Agent Reduction feature has been enabled starting from M101,
     // but we still keep this flag for future phase tests.
@@ -2876,10 +2891,18 @@
       status: "experimental",
     },
     {
-      // View transitions, including view transitions.
+      // View transitions.
       // See https://www.w3.org/TR/css-view-transitions-1/
       name: "ViewTransition",
       base_feature: "ViewTransition",
+      implied_by: ["ViewTransitionOnNavigation"],
+    },
+    {
+      // If enabled, ViewTransition API is supported for navigations including
+      // cross-document transitions.
+      // See https://drafts.csswg.org/css-view-transitions-1/.
+      name: "ViewTransitionOnNavigation",
+      base_feature: "ViewTransitionOnNavigation",
     },
     {
       name: "VisibilityCollapseColumn",

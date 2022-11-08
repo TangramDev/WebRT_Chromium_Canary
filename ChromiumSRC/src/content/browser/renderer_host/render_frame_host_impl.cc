@@ -273,6 +273,7 @@
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/renderer_host/render_frame_host_android.h"
 #include "content/public/browser/android/java_interfaces.h"
+#include "content/public/browser/authenticator_request_client_delegate.h"
 #else
 #include "content/browser/hid/hid_service.h"
 #include "content/browser/host_zoom_map_impl.h"
@@ -6721,7 +6722,7 @@ void RenderFrameHostImpl::EnterFullscreen(
     return;
   }
 
-  // Allow sites with the window-placement permission to open a popup window
+  // Allow sites with the Window Management permission to open a popup window
   // after requesting fullscreen on a specific screen of a multi-screen device.
   // This enables multi-screen content experiences from a single user gesture.
   const display::Screen* screen = display::Screen::GetScreen();
@@ -9932,6 +9933,14 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(
   params->max_nodes = max_nodes;
   params->timeout = timeout;
   RequestAXTreeSnapshot(std::move(callback), std::move(params));
+}
+
+void RenderFrameHostImpl::SnapshotDocumentForViewTransition(
+    blink::mojom::LocalFrame::SnapshotDocumentForViewTransitionCallback
+        callback) {
+  DCHECK(IsRenderFrameLive());
+  GetAssociatedLocalFrame()->SnapshotDocumentForViewTransition(
+      std::move(callback));
 }
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(
@@ -13975,6 +13984,14 @@ RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
     return std::make_pair(status, is_cross_origin);
   }
 
+  if (!GetContentClient()
+           ->browser()
+           ->GetWebAuthenticationDelegate()
+           ->IsSecurityLevelAcceptableForWebAuthn(this)) {
+    return std::make_pair(blink::mojom::AuthenticatorStatus::CERTIFICATE_ERROR,
+                          is_cross_origin);
+  }
+
   status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
       effective_origin, relying_party_id, request_type,
       remote_desktop_client_override);
@@ -13999,6 +14016,13 @@ RenderFrameHostImpl::PerformMakeCredentialWebAuthSecurityChecks(
           effective_origin, request_type, &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     return status;
+  }
+
+  if (!GetContentClient()
+           ->browser()
+           ->GetWebAuthenticationDelegate()
+           ->IsSecurityLevelAcceptableForWebAuthn(this)) {
+    return blink::mojom::AuthenticatorStatus::CERTIFICATE_ERROR;
   }
 
   status = GetWebAuthRequestSecurityChecker()->ValidateDomainAndRelyingPartyID(
