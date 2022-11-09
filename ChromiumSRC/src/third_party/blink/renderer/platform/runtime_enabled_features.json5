@@ -456,7 +456,7 @@
       status: "experimental",
     },
     {
-      name: "CanvasColorManagementV2",
+      name: "CanvasFloatingPoint",
       status: "experimental",
     },
     {
@@ -3072,10 +3072,6 @@
       base_feature: "WebFontResizeLCP",
     },
     {
-      name: "WebGLColorManagement",
-      status: "stable",
-    },
-    {
       name: "WebGLDeveloperExtensions",
       public: true,
       status: "experimental",
@@ -3085,6 +3081,10 @@
       // platform features.
       name: "WebGLDraftExtensions",
       public: true,
+    },
+    {
+      name: "WebGLDrawingBufferStorage",
+      status: "experimental",
     },
     {
       name: "WebGLImageChromium",
