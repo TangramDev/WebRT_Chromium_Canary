@@ -448,8 +448,8 @@ ResultCode InterceptionManager::PatchClientFunctions(
   char* interceptor_base = nullptr;
 
 #if defined(SANDBOX_EXPORTS)
-  interceptor_base = reinterpret_cast<char*>(child_.MainModule());
-  base::ScopedNativeLibrary local_interceptor(::LoadLibrary(child_.Name()));
+  interceptor_base = reinterpret_cast<char*>(child_->MainModule());
+  base::ScopedNativeLibrary local_interceptor(::LoadLibrary(child_->Name()));
 #endif  // defined(SANDBOX_EXPORTS)
   // end Add by TangramTeam
 

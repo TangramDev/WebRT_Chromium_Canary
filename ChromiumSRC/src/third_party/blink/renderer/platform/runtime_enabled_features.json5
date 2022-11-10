@@ -1544,6 +1544,8 @@
       name: "LayoutMediaNGContainer",
       // This feature doesn't work in the legacy layout.
       depends_on: ["LayoutNGPrinting"],
+      status: "test",
+      base_feature: "LayoutMediaNGContainer",
     },
     {
       // LayoutNG has been enabled in M76, but we still keep this flag for
@@ -1884,7 +1886,6 @@
       name: "OffsetParentNewSpecBehavior",
       status: "stable",
       base_feature: "OffsetParentNewSpecBehavior",
-      public: true,
     },
     {
       name: "OnDeviceChange",
@@ -2455,7 +2456,6 @@
       name: "SendMouseEventsDisabledFormControls",
       base_feature: "SendMouseEventsDisabledFormControls",
       status: "experimental",
-      public: true,
     },
     {
       name: "SensorExtraClasses",
