@@ -30,7 +30,7 @@ Unzip the Patch zip you downloaded.</p>
 	
 About <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>
 </h1>
-<h2><p>Each Chromium WebRT Patch contains a file "ChromiumVer.txt" to specify the Tag of the Chromium Project version corresponding to the Patch, for example: 109.0.5402.0.</p>
+<h2><p>Each Chromium WebRT Patch contains a file "ChromiumVer.txt" to specify the Tag of the Chromium Project version corresponding to the Patch, for example: 109.0.5411.0.</p>
 </h2>
 
 
@@ -85,11 +85,11 @@ as shown in the following figure:</p>
 <div align=center id="cmd"><img src="https://user-images.githubusercontent.com/26355688/199431665-1aa299b4-d1ec-4c6d-83ad-865541a214d6.jpg" width="75%"/></div> </p>
 <p>execute the following command:
 
-	$ ..\getbranch 54ab.c Base
+	$ ..\getbranch 5411.0 Base
 </p>
 <p>
 	
-Here, "<ins>109.0.54ab.c</ins>" is the Tag value contained in <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>, and "Base" is the branch name of "Base Branch"</p>
+Here, "<ins>109.0.5411.0</ins>" is the Tag value contained in <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>, and "Base" is the branch name of "Base Branch"</p>
 
 <p>Copy the folder "ChromiumSRC\src" (this folder is included in the unzipped folder of Chromium WebRT Patch) to "d:\WebRT\M108\src", execute the following command:
 	
@@ -100,13 +100,13 @@ Here, "<ins>109.0.54ab.c</ins>" is the Tag value contained in <i>[ChromiumVer.tx
 
 <h1 align=center>
 
-WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 109.0.54xy.z</i>
+WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 109.0.x.y</i>(x>=5411, y>=0)
 </h1>
 <h2>
 <p>Execute the following command:
 	
-	$ ..\getWebRTbranch 54xy.z your_branch_name Base
-Here, "Base" is the source code branch that supports WebRuntime created in the above steps, and x,y and z are are integers, you will obtain a branch with webruntime support you expected.
+	$ ..\getWebRTbranch x.y your_branch_name Base
+Here, "Base" is the source code branch that supports WebRuntime created in the above steps, and x(>=5411) and y(>=0) are are integers, you will obtain a branch with webruntime support you expected.
 </p>
 </h2>
 
