@@ -1492,6 +1492,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
     const blink::LocalFrameToken& frame_token,
     const blink::DocumentToken& document_token,
+    base::UnguessableToken devtools_frame_token,
     bool renderer_initiated_creation_of_main_frame,
     LifecycleStateImpl lifecycle_state,
     scoped_refptr<BrowsingContextState> browsing_context_state,
@@ -1528,7 +1529,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           FrameTreeNode::kFrameTreeNodeInvalidId),
       code_cache_host_receivers_(
           GetProcess()->GetStoragePartition()->GetGeneratedCodeCacheContext()),
-      fenced_frame_status_(fenced_frame_status) {
+      fenced_frame_status_(fenced_frame_status),
+      devtools_frame_token_(devtools_frame_token) {
   TRACE_EVENT_BEGIN("navigation", "RenderFrameHostImpl",
                     perfetto::Track::FromPointer(this),
                     "render_frame_host_when_created", this);
@@ -2268,7 +2270,7 @@ int RenderFrameHostImpl::GetFrameTreeNodeId() const {
 }
 
 const base::UnguessableToken& RenderFrameHostImpl::GetDevToolsFrameToken() {
-  return frame_tree_node_->devtools_frame_token();
+  return devtools_frame_token();
 }
 
 absl::optional<base::UnguessableToken>
@@ -3236,7 +3238,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(
   params->replication_state =
       browsing_context_state_->current_replication_state().Clone();
   params->frame_token = frame_token_;
-  params->devtools_frame_token = frame_tree_node()->devtools_frame_token();
+  params->devtools_frame_token = devtools_frame_token();
   BindAssociatedInterfaceProviderReceiver(
       params->associated_interface_provider_remote
           .InitWithNewEndpointAndPassReceiver());
@@ -3428,8 +3430,8 @@ void RenderFrameHostImpl::RenderFrameCreated() {
     // here, since speculative and pending deletion RenderFrameHosts get
     // deleted immediately after crash, whereas prerender gets cancelled and
     // bfcache entry gets evicted.
-    DCHECK_EQ(frame_tree_node_->current_frame_host(), this);
-    frame_tree_node_->frame_tree()->delegate()->NotifyPageChanged(GetPage());
+    DCHECK_EQ(lifecycle_state(), LifecycleStateImpl::kActive);
+    GetPage().NotifyPageBecameCurrent();
   }
 
   // Initialize the RenderWidgetHost which marks it and the RenderViewHost as
@@ -4041,15 +4043,12 @@ absl::optional<base::UnguessableToken> RenderFrameHostImpl::ComputeNonce(
   // from this RFHI's FrameTreeNode with FrameTreeNode::GetFencedFrameNonce().
   //
   // Note that MPArch will ensure that fenced frame tree within an anonymous
-  // iframe does not have `is_anonymous` set to true. The ShadowDOM architecture
-  // cannot make the same guarantee that MPArch will, and therefore the shadow
-  // DOM version and will lead to the anonymous iframe nonce being used
-  // (crbug.com/1249865).
-  // The nonce was moved from PageImpl to RenderFrameHostImpl to fix
-  // crbug.com/1287458. In the case of an anonymous iframe embedded in a fenced
-  // frame, we get the anonymous_iframes_nonce of the fenced frame root to
-  // prevent anonymous iframes embedded inside a fenced frame from sharing nonce
-  // with anonymous iframes outside the fenced frame.
+  // iframe does not have `is_anonymous` set to true. The nonce was moved from
+  // PageImpl to RenderFrameHostImpl to fix crbug.com/1287458. In the case of an
+  // anonymous iframe embedded in a fenced frame, we get the
+  // `anonymous_iframes_nonce_` of the fenced frame root to prevent anonymous
+  // iframes embedded inside a fenced frame from sharing nonce with anonymous
+  // iframes outside the fenced frame.
   if (fenced_frame_nonce_for_navigation.has_value()) {
     return fenced_frame_nonce_for_navigation;
   }
@@ -4155,6 +4154,7 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
     mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
     const blink::LocalFrameToken& frame_token,
     const blink::DocumentToken& document_token,
+    base::UnguessableToken devtools_frame_token,
     const blink::FramePolicy& frame_policy,
     std::string frame_name,
     std::string frame_unique_name) {
@@ -4163,7 +4163,8 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   // a different one if they navigate away.
   child->render_manager()->InitChild(
       GetSiteInstance(), frame_routing_id, std::move(frame_remote), frame_token,
-      document_token, frame_policy, frame_name, frame_unique_name);
+      document_token, devtools_frame_token, frame_policy, frame_name,
+      frame_unique_name);
 
   // Other renderer processes in this BrowsingInstance may need to find out
   // about the new frame.  Create a proxy for the child frame in all
@@ -6816,8 +6817,7 @@ void RenderFrameHostImpl::ScrollRectToVisibleInParentFrame(
       return;
     }
 
-    proxy = frame_tree_->IsFencedFramesMPArchBased() ? GetProxyToOuterDelegate()
-                                                     : GetProxyToParent();
+    proxy = GetProxyToOuterDelegate();
   } else {
     proxy = GetProxyToParent();
   }
@@ -6840,9 +6840,7 @@ void RenderFrameHostImpl::BubbleLogicalScrollInParentFrame(
   // that a keyboard event was recently sent. https://crbug.com/1123606. I&S
   // tracker row 191.
   RenderFrameProxyHost* proxy =
-      (IsFencedFrameRoot() && frame_tree_->IsFencedFramesMPArchBased())
-          ? GetProxyToOuterDelegate()
-          : GetProxyToParent();
+      IsFencedFrameRoot() ? GetProxyToOuterDelegate() : GetProxyToParent();
 
   if (!proxy) {
     // Only frames with an out-of-process parent frame should be sending this
@@ -7656,7 +7654,7 @@ void RenderFrameHostImpl::CreateFencedFrame(
                                     bad_message::FF_CREATE_WHILE_PRERENDERING);
     return;
   }
-  if (!frame_tree_->IsFencedFramesMPArchBased()) {
+  if (!blink::features::IsFencedFramesEnabled()) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFH_FENCED_FRAME_MOJO_WHEN_DISABLED);
     return;
@@ -7690,7 +7688,8 @@ void RenderFrameHostImpl::CreateFencedFrame(
   // this tab.
   for (FrameTreeNode* node :
        GetOutermostMainFrame()->frame_tree()->NodesIncludingInnerTreeNodes()) {
-    if (node->devtools_frame_token() == devtools_frame_token) {
+    if (node->current_frame_host()->devtools_frame_token() ==
+        devtools_frame_token) {
       bad_message::ReceivedBadMessage(
           GetProcess(),
           bad_message::RFHI_CREATE_FENCED_FRAME_BAD_DEVTOOLS_FRAME_TOKEN);
@@ -7698,12 +7697,13 @@ void RenderFrameHostImpl::CreateFencedFrame(
     }
   }
 
-  fenced_frames_.push_back(std::make_unique<FencedFrame>(
-      weak_ptr_factory_.GetSafeRef(), mode, devtools_frame_token));
+  fenced_frames_.push_back(
+      std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef(), mode));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
   RenderFrameProxyHost* proxy_host =
       fenced_frame->InitInnerFrameTreeAndReturnProxyToOuterFrameTree(
-          std::move(remote_frame_interfaces), frame_token);
+          std::move(remote_frame_interfaces), frame_token,
+          devtools_frame_token);
   fenced_frame->Bind(std::move(pending_receiver));
 
   // Since the fenced frame is newly created and has yet to commit a navigation,
@@ -9535,6 +9535,14 @@ void RenderFrameHostImpl::UpdateAccessibilityMode() {
     // in the renderer.
     render_accessibility_.reset();
   }
+
+  if (!ax_mode.has_mode(ui::kAXModeBasic.mode()) &&
+      browser_accessibility_manager_) {
+    // Missing either kWebContents and kNativeAPIs, so
+    // BrowserAccessibilityManager is no longer necessary.
+    browser_accessibility_manager_->DetachFromParentManager();
+    browser_accessibility_manager_.reset();
+  }
 }
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(
@@ -11221,12 +11229,16 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // and would leave the NavigationController in a weird state. Kill the
   // renderer before getting to NavigationController::RendererDidNavigate if
   // that happens.
-  if (is_same_document_navigation && frame_tree_node_->navigator()
-                                         .controller()
-                                         .has_post_commit_error_entry()) {
-    bad_message::ReceivedBadMessage(
-        process, bad_message::NC_SAME_DOCUMENT_POST_COMMIT_ERROR);
-    return false;
+  if (is_same_document_navigation) {
+    // `owner_` cannot be null when this is from a same-document navigation.
+    DCHECK(owner_);
+    if (owner_->GetCurrentNavigator()
+            .controller()
+            .has_post_commit_error_entry()) {
+      bad_message::ReceivedBadMessage(
+          process, bad_message::NC_SAME_DOCUMENT_POST_COMMIT_ERROR);
+      return false;
+    }
   }
 
   // Check(s) specific to sub-frame navigation.
@@ -14179,6 +14191,15 @@ void RenderFrameHostImpl::BindCacheStorageForBucket(
     const storage::BucketInfo& bucket,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   BindCacheStorageInternal(std::move(receiver), bucket.ToBucketLocator());
+}
+
+void RenderFrameHostImpl::GetSandboxedFileSystemForBucket(
+    const storage::BucketInfo& bucket,
+    blink::mojom::BucketHost::GetDirectoryCallback callback) {
+  GetStoragePartition()->GetFileSystemAccessManager()->GetSandboxedFileSystem(
+      FileSystemAccessManagerImpl::BindingContext(
+          storage_key(), GetLastCommittedURL(), GetGlobalId()),
+      bucket.ToBucketLocator(), std::move(callback));
 }
 
 RenderFrameHostImpl::DocumentAssociatedData::DocumentAssociatedData(

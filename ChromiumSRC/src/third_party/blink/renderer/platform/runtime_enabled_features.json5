@@ -329,7 +329,7 @@
       // Makes autofill look across shadow boundaries when collecting form
       // controls to fill.
       name: "AutofillShadowDOM",
-      status: "experimental",
+      status: "stable",
       base_feature: "AutofillShadowDOM",
     },
     {
@@ -646,8 +646,10 @@
     {
       // Support for CSS Color Module Level 4
       // https://www.w3.org/TR/css-color-4/
+      // It has a kill-switch in case we see that something is not proplery working"
       name: "CSSColor4",
-      status:  "experimental",
+      status:  "stable",
+      base_feature: "CSSColor4",
     },
     {
       name: "CSSColorContrast",
@@ -948,10 +950,6 @@
     {
       name: "CSSViewTimeline",
       status: "test",
-    },
-    {
-      name: "CustomElementDefaultStyle",
-      status: "experimental",
     },
     {
       name: "Database",
@@ -1345,6 +1343,10 @@
       name: "FontSrcLocalMatching",
       // No status, as the web platform runtime enabled feature is controlled by
       // a Chromium level feature.
+    },
+    {
+      name: "FontVariantPosition",
+      status: "experimental",
     },
     {
       // TODO(crbug.com/1231644): This flag is being kept (even though the
@@ -2245,6 +2247,15 @@
     {
       name: "ReduceAcceptLanguage",
       origin_trial_feature_name: "ReduceAcceptLanguage"
+    },
+    {
+      // If enabled, the deviceModel will be reduced to "K" and the
+      // androidVersion will be reduced to a static "10" string in android
+      // User-Agent string.
+      name: "ReduceUserAgentAndroidVersionDeviceModel",
+      depends_on: ["ReduceUserAgentMinorVersion"],
+      status: {"Android": "experimental"},
+      base_feature: "ReduceUserAgentAndroidVersionDeviceModel",
     },
     // If enabled, the minor version of the User-Agent string will be reduced.
     // This User-Agent Reduction feature has been enabled starting from M101,
