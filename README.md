@@ -30,7 +30,7 @@ Unzip the Patch zip you downloaded.</p>
 	
 About <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>
 </h1>
-<h2><p>Each Chromium WebRT Patch contains a file "ChromiumVer.txt" to specify the Tag of the Chromium Project version corresponding to the Patch, for example: 109.0.5411.0.</p>
+<h2><p>Each Chromium WebRT Patch contains a file "ChromiumVer.txt" to specify the Tag of the Chromium Project version corresponding to the Patch, for example: 110.0.5414.0.</p>
 </h2>
 
 
@@ -100,13 +100,13 @@ Here, "<ins>109.0.5411.0</ins>" is the Tag value contained in <i>[ChromiumVer.tx
 
 <h1 align=center>
 
-WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 109.0.x.y</i>(x>=5411, y>=0)
+WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 110.0.x.y</i>(x>=5416, y>=0)
 </h1>
 <h2>
 <p>Execute the following command:
 	
 	$ ..\getWebRTbranch x.y your_branch_name Base
-Here, "Base" is the source code branch that supports WebRuntime created in the above steps, and x(>=5411) and y(>=0) are are integers, you will obtain a branch with webruntime support you expected.
+Here, "Base" is the source code branch that supports WebRuntime created in the above steps, and x(>=5416) and y(>=0) are are integers, you will obtain a branch with webruntime support you expected.
 </p>
 </h2>
 
