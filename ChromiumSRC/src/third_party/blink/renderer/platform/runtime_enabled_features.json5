@@ -589,7 +589,7 @@
       status:  {"Android": "stable", "default": "experimental"},
     },
     {
-      name: "ContentVisibilityAutoStateChangedEvent",
+      name: "ContentVisibilityAutoStateChangeEvent",
       status: "stable",
     },
     {
@@ -1501,6 +1501,11 @@
       status: "stable",
     },
     {
+      name: "ImeVerticalFlag",
+      status: "stable",
+      base_feature: "ImeVerticalFlag",
+    },
+    {
       name: "ImplicitRootScroller",
       public: true,
       settable_from_internals: true,
@@ -1888,6 +1893,7 @@
       name: "OffsetParentNewSpecBehavior",
       status: "stable",
       base_feature: "OffsetParentNewSpecBehavior",
+      public: true,
     },
     {
       name: "OnDeviceChange",
@@ -2467,6 +2473,7 @@
       name: "SendMouseEventsDisabledFormControls",
       base_feature: "SendMouseEventsDisabledFormControls",
       status: "experimental",
+      public: true,
     },
     {
       name: "SensorExtraClasses",
