@@ -565,6 +565,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<Cosmos> cosmos_;
   // end Add by TangramTeam
 
+  Member<NavigationApi> navigation_;
+
   String status_;
   String default_status_;
 
