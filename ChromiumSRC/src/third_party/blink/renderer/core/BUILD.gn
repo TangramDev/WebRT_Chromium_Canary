@@ -289,7 +289,6 @@ component("core") {
     ":core_hot",
     "//cc",
     "//skia",
-    "//third_party/blink/public/mojom:mobile_metrics_blink",
     "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings_blink",
     "//third_party/blink/public/mojom:mojom_core_blink",
     "//third_party/blink/renderer/bindings/core/v8",
@@ -788,6 +787,13 @@ css_properties("make_core_generated_known_exposed_properties") {
   outputs = [ "$blink_core_output_dir/known_exposed_properties.cc" ]
 }
 
+css_properties("make_core_generated_logical_group_properties") {
+  script =
+      "../build/scripts/core/css/properties/make_logical_group_properties.py"
+  other_inputs = [ "../build/scripts/core/css/properties/templates/logical_group_properties.cc.tmpl" ]
+  outputs = [ "$blink_core_output_dir/logical_group_properties.cc" ]
+}
+
 code_generator("make_core_generated_css_value_keywords") {
   script = "../build/scripts/core/css/make_css_value_keywords.py"
   json_inputs = [ "css/css_value_keywords.json5" ]
@@ -1146,6 +1152,28 @@ blink_python_runner("make_core_generated_html_attribute_name_lookup_trie") {
   deps = make_core_generated_deps
 }
 
+blink_python_runner(
+    "make_core_generated_runtime_feature_state_override_context") {
+  script = "../build/scripts/make_runtime_feature_state_override_context.py"
+
+  inputs = scripts_for_json5_files + [
+             "../build/scripts/make_runtime_feature_state_override_context.py",
+             "../platform/runtime_enabled_features.json5",
+             "../build/scripts/templates/runtime_feature_state_override_context.h.tmpl",
+             "../build/scripts/templates/runtime_feature_state_override_context.cc.tmpl",
+           ]
+  outputs = [
+    "$blink_core_output_dir/runtime_feature_state/runtime_feature_state_override_context.h",
+    "$blink_core_output_dir/runtime_feature_state/runtime_feature_state_override_context.cc",
+  ]
+
+  args = [
+    rebase_path("../platform/runtime_enabled_features.json5", root_build_dir),
+    "--output_dir",
+    "$rel_blink_core_gen_dir/runtime_feature_state",
+  ]
+}
+
 blink_python_runner("make_core_generated_web_origin_trials") {
   script = "../build/scripts/make_web_origin_trials.py"
 
@@ -1194,6 +1222,7 @@ targets_generating_sources = [
   ":make_core_generated_input_type_names",
   ":make_core_generated_keywords",
   ":make_core_generated_known_exposed_properties",
+  ":make_core_generated_logical_group_properties",
   ":make_core_generated_mathml_element_type_helpers",
   ":make_core_generated_mathml_names",
   ":make_core_generated_media_feature_names",
@@ -1202,6 +1231,7 @@ targets_generating_sources = [
   ":make_core_generated_performance_entry_names",
   ":make_core_generated_permissions_policy_helper",
   ":make_core_generated_pointer_type_names",
+  ":make_core_generated_runtime_feature_state_override_context",
   ":make_core_generated_script_type_names",
   ":make_core_generated_securitypolicyviolation_disposition_names",
   ":make_core_generated_shadow_element_names",
@@ -1429,7 +1459,6 @@ source_set("unit_tests") {
     "//third_party/blink/public:buildflags",
     "//third_party/blink/public:test_headers",
     "//third_party/blink/public/common/privacy_budget:test_support",
-    "//third_party/blink/public/mojom:mobile_metrics",
     "//third_party/blink/renderer/controller:blink_bindings_test_sources",
     "//third_party/blink/renderer/core",
     "//third_party/blink/renderer/core:testing",

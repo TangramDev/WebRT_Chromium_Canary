@@ -2812,9 +2812,6 @@ void RenderFrameImpl::CommitNavigationWithParams(
     // Save the Back/Forward Cache NotRestoredReasons struct to WebLocalFrame to
     // report for PerformanceNavigationTiming API.
     frame_->SetNotRestoredReasons(std::move(not_restored_reasons));
-    // For cross-document main frame history navigations, |not_restored_reasons|
-    // should be populated and has blocking reasons.
-    DCHECK(frame_->HasBlockingReasons());
   }
 
   // Note: this intentionally does not call |Detach()| before |reset()|. If
@@ -3127,6 +3124,9 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
         !!(common_params->transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
     bool started_with_transient_activation = common_params->has_user_gesture;
     bool is_browser_initiated = commit_params->is_browser_initiated;
+    absl::optional<blink::scheduler::TaskAttributionId>
+        soft_navigation_heuristic_task_id =
+            commit_params->soft_navigation_heuristic_task_id;
 
     WebSecurityOrigin initiator_origin;
     if (common_params->initiator_origin)
@@ -3147,7 +3147,7 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     commit_status = frame_->CommitSameDocumentNavigation(
         url, load_type, item_for_history_navigation, is_client_redirect,
         started_with_transient_activation, initiator_origin,
-        is_browser_initiated);
+        is_browser_initiated, soft_navigation_heuristic_task_id);
 
     // The load of the URL can result in this frame being removed. Use a
     // WeakPtr as an easy way to detect whether this has occured. If so, this
@@ -4503,6 +4503,14 @@ void RenderFrameImpl::NotifyWebAXObjectMarkedDirty(
 
   render_accessibility_manager_->GetRenderAccessibilityImpl()
       ->NotifyWebAXObjectMarkedDirty(obj);
+}
+
+void RenderFrameImpl::AXReadyCallback() {
+  if (!IsAccessibilityEnabled())
+    return;
+
+  render_accessibility_manager_->GetRenderAccessibilityImpl()
+      ->AXReadyCallback();
 }
 
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {

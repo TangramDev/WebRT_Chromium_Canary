@@ -658,32 +658,6 @@
       status:  "experimental",
     },
     {
-      // Flag for supporting size and inline-size container-types along with the
-      // @container rules for size queries. Also implies support for container
-      // relative units and inline-size containment.
-      // https://drafts.csswg.org/css-contain-3/#container-queries
-      name: "CSSContainerQueries",
-      status: "stable"
-    },
-    {
-      // https://drafts.csswg.org/css-contain-3/#container-lengths
-      name: "CSSContainerRelativeUnits",
-      implied_by: ["CSSContainerQueries"]
-    },
-    {
-      // With this flag disabled, we run UpdateStyle() over the full DOM tree
-      // before running interleaved style/layout. With this flag enabled, we
-      // skip style recalc in UpdateStyle() for containers which are guaranteed
-      // to be reachable in the following layout.
-      name: "CSSContainerSkipStyleRecalc",
-      implied_by: ["CSSContainerQueries"]
-    },
-    {
-      // Support for contain:inline-size
-      name: "CSSContainSize1D",
-      implied_by: ["CSSContainerQueries"]
-    },
-    {
       // Include custom properties in CSSComputedStyleDeclaration::item/length.
       // https://crbug.com/949807
       name: "CSSEnumeratedCustomProperties",
@@ -1436,11 +1410,6 @@
         "default": "experimental",
       },
     },
-    {
-      name: "HidDeviceForget",
-      depends_on: ["WebHID"],
-      status: {"Android": "", "default": "stable"},
-    },
     // HighlightAPI's custom highlights use HighlightInheritance's behavior even
     // if the HighlightInheritance feature is not enabled.
     {
@@ -1549,7 +1518,7 @@
       name: "LayoutMediaNGContainer",
       // This feature doesn't work in the legacy layout.
       depends_on: ["LayoutNGPrinting"],
-      status: "test",
+      status: "stable",
       base_feature: "LayoutMediaNGContainer",
     },
     {
@@ -1621,6 +1590,15 @@
       name: "LayoutNGTableFragmentation",
       depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
       status: "stable",
+    },
+    {
+      // Merge UpdateAfterLayout() calls for LayoutReplaced into one in
+      // CopyFragmentDataToLayoutBox(). crbug.com/1353190
+      name: "LayoutNGUnifyUpdateAfterLayout",
+      // This feature doesn't work in the legacy layout.
+      depends_on: ["LayoutNGPrinting"],
+      status: "stable",
+      base_feature: "LayoutNGUnifyUpdateAfterLayout",
     },
     {
       name: "LazyFrameLoading",
@@ -1813,10 +1791,6 @@
       // When enabled, iframes are not capturing mouse events by default.
       name: "MouseSubframeNoImplicitCapture",
       public: true,
-    },
-    {
-      name: "NavigationApi",
-      status: "stable",
     },
     {
       name: "NavigationId",
@@ -2170,7 +2144,7 @@
     {
       name: "PrefixedStorageInfo",
       public: true,
-      status: "stable",
+      status: "test",
       base_feature: "PrefixedStorageInfo",
       base_feature_status: "disabled",
     },
@@ -2476,10 +2450,6 @@
     },
     {
       name: "Serial",
-      status: {"Android": "", "default": "stable"},
-    },
-    {
-      name: "SerialPortForget",
       status: {"Android": "", "default": "stable"},
     },
     {
@@ -2970,7 +2940,7 @@
     {
       name: "WebAppLaunchHandler",
       origin_trial_feature_name: "Launch Handler",
-      status: "experimental",
+      status: {"Android": "experimental", "default": "stable"},
       base_feature: "WebAppEnableLaunchHandler",
     },
     {
@@ -3130,10 +3100,6 @@
       status: {"Android": "", "default": "stable"},
     },
     {
-      name: "WebHIDExclusionFiltersOption",
-      status: "stable",
-    },
-    {
       // It is only enabled in extension environment for now.
       name: "WebHIDOnServiceWorkers",
       depends_on: ["WebHID"],
@@ -3148,11 +3114,6 @@
     {
       name: "WebNFC",
       public: true,
-      status: {"Android": "stable", "default": "test"},
-    },
-    {
-      name: "WebNFCMakeReadOnly",
-      depends_on: ["WebNFC"],
       status: {"Android": "stable", "default": "test"},
     },
     {
@@ -3190,10 +3151,6 @@
     {
       name: "WebUSB",
       public: true,
-      status: "stable",
-    },
-    {
-      name: "WebUsbDeviceForget",
       status: "stable",
     },
     {
@@ -3263,6 +3220,12 @@
       depends_on: ["WebXRARModule"],
       public: true,
       status: "experimental",
+    },
+    {
+      name: "WebXRLayers",
+      depends_on: ["WebXR"],
+      public: true,
+      status: "experimental"
     },
     {
       name: "WebXRLightEstimation",

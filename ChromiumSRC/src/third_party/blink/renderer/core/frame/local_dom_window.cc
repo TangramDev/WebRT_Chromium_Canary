@@ -116,6 +116,7 @@
 #include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
@@ -941,8 +942,24 @@ void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
 }
 
 void LocalDOMWindow::DispatchPopstateEvent(
-    scoped_refptr<SerializedScriptValue> state_object) {
+    scoped_refptr<SerializedScriptValue> state_object,
+    absl::optional<scheduler::TaskAttributionId>
+        soft_navigation_heuristics_task_id) {
   DCHECK(GetFrame());
+  // This unique_ptr maintains the TaskScope alive for the lifetime of the
+  // method.
+  std::unique_ptr<scheduler::TaskAttributionTracker::TaskScope>
+      task_attribution_scope;
+  if (soft_navigation_heuristics_task_id) {
+    ScriptState* script_state = ToScriptStateForMainWorld(GetFrame());
+    DCHECK(ThreadScheduler::Current());
+    auto* tracker = ThreadScheduler::Current()->GetTaskAttributionTracker();
+    if (script_state && tracker) {
+      task_attribution_scope = tracker->CreateTaskScope(
+          script_state, soft_navigation_heuristics_task_id,
+          scheduler::TaskAttributionTracker::TaskScopeType::kPopState);
+    }
+  }
   DispatchEvent(*PopStateEvent::Create(std::move(state_object), history()));
 }
 
@@ -1148,6 +1165,12 @@ Navigator* LocalDOMWindow::navigator() {
   return navigator_.Get();
 }
 
+NavigationApi* LocalDOMWindow::navigation() {
+  if (!navigation_)
+    navigation_ = MakeGarbageCollected<NavigationApi>(this);
+  return navigation_.Get();
+}
+
 void LocalDOMWindow::SchedulePostMessage(PostedMessage* posted_message) {
   LocalDOMWindow* source = posted_message->source;
 
@@ -1316,11 +1339,7 @@ Element* LocalDOMWindow::frameElement() const {
   if (!GetFrame())
     return nullptr;
 
-  FrameOwner* owner = GetFrame()->Owner();
-  if (owner && owner->GetFramePolicy().is_fenced)
-    return nullptr;
-
-  return DynamicTo<HTMLFrameOwnerElement>(owner);
+  return DynamicTo<HTMLFrameOwnerElement>(GetFrame()->Owner());
 }
 
 void LocalDOMWindow::print(ScriptState* script_state) {
@@ -2151,6 +2170,28 @@ void LocalDOMWindow::FinishedLoading(FrameLoader::NavigationFinishState state) {
     cosmos();
 
   if (cosmos_) {
+    Element* mainurlsElem_ = nullptr;
+    HTMLCollection* const mainUrlsElements =
+        document()->getElementsByTagName("mainurls");
+    if (mainUrlsElements != nullptr && mainUrlsElements->length()) {
+      mainurlsElem_ = mainUrlsElements->item(0);
+      String mainurlsHTML = "";
+      if (mainurlsElem_) {
+        HTMLCollection* const urlElements =
+            mainurlsElem_->getElementsByTagName("url");
+        for (Element* element : *urlElements) {
+          // String url = element->innerHTML();
+          AtomicString url = element->getAttribute("url");
+          if (url.IsNull() == false && url != "")
+            mainurlsHTML = mainurlsHTML + url + "|";
+        }
+
+        if (mainurlsHTML.IsNull() == false && mainurlsHTML != "") {
+          cosmos_->openMainWndUrls(mainurlsHTML);
+        }
+      }
+    }
+
     AtomicString extraPrefix = "";
 
     // Use a custom prefix.
@@ -2415,6 +2456,7 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
   visitor->Trace(media_);
   visitor->Trace(custom_elements_);
   visitor->Trace(external_);
+  visitor->Trace(navigation_);
   visitor->Trace(visualViewport_);
   visitor->Trace(event_listener_observers_);
   visitor->Trace(current_event_);

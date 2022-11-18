@@ -823,6 +823,19 @@ enum class RendererLoadType {
   kReplaceCurrentItem,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Used to log whether the call to SSLManager::DidStartResourceResponse()
+// resulted in a no-op or if the exceptions were cleared out when a good
+// certificate was seen. Matches histogram enum (SSLSubresourceResponseType).
+enum class SSLSubresourceResponseType {
+  // Includes cases when call resulted in a no-op.
+  kIgnored = 0,
+  // Includes cases when exceptions were cleared after seeing a good cert.
+  kProcessed = 1,
+  kMaxValue = kProcessed,
+};
+
 bool ValidateCSPAttribute(const std::string& value) {
   static const size_t kMaxLengthCSPAttribute = 4096;
   if (!base::IsStringASCII(value))
@@ -3779,16 +3792,6 @@ void RenderFrameHostImpl::CreateChildFrame(
     return;
   }
 
-  // Cannot create a fenced frame in a sandbox iframe which doesn't allow
-  // features that need to be allowed in the fenced frame. This is for Shadow
-  // DOM Fenced Frame.
-  if (IsSandboxed(blink::kFencedFrameMandatoryUnsandboxedFlags) &&
-      frame_policy.is_fenced) {
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RFH_CREATE_FENCED_FRAME_IN_SANDBOXED_FRAME);
-    return;
-  }
-
   // TODO(crbug.com/1145708). The interface exposed to tests should
   // match the mojo interface.
   OnCreateChildFrame(new_routing_id, std::move(frame_remote),
@@ -6189,8 +6192,11 @@ void RenderFrameHostImpl::DispatchLoad() {
     proxy->GetAssociatedRemoteFrame()->DispatchLoadEventForFrameOwner();
 }
 
-void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
-                                            bool has_user_gesture) {
+void RenderFrameHostImpl::GoToEntryAtOffset(
+    int32_t offset,
+    bool has_user_gesture,
+    absl::optional<blink::scheduler::TaskAttributionId>
+        soft_navigation_heuristic_task_id) {
   OPTIONAL_TRACE_EVENT2("content", "RenderFrameHostImpl::GoToEntryAtOffset",
                         "render_frame_host", this, "offset", offset);
 
@@ -6207,7 +6213,8 @@ void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
 
   // All frames are allowed to navigate the global history.
   if (delegate_->IsAllowedToGoToEntryAtOffset(offset)) {
-    frame_tree_->controller().GoToOffsetFromRenderer(offset, this);
+    frame_tree_->controller().GoToOffsetFromRenderer(
+        offset, this, soft_navigation_heuristic_task_id);
   }
 }
 
@@ -7951,10 +7958,14 @@ void RenderFrameHostImpl::SubresourceResponseStarted(
   OPTIONAL_TRACE_EVENT1("content",
                         "RenderFrameHostImpl::SubresourceResponseStarted",
                         "url", final_response_url.GetURL());
-  frame_tree_->controller().ssl_manager()->DidStartResourceResponse(
-      final_response_url, cert_status);
+  bool was_processed =
+      frame_tree_->controller().ssl_manager()->DidStartResourceResponse(
+          final_response_url, cert_status);
+  UMA_HISTOGRAM_ENUMERATION("SSL.Experimental.SubresourceResponse",
+                            was_processed
+                                ? SSLSubresourceResponseType::kProcessed
+                                : SSLSubresourceResponseType::kIgnored);
 }
-
 void RenderFrameHostImpl::ResourceLoadComplete(
     blink::mojom::ResourceLoadInfoPtr resource_load_info) {
   GlobalRequestID global_request_id;
@@ -14468,7 +14479,8 @@ void RenderFrameHostImpl::SendCosmosMessage(CommonUniverse::IPCSession* var) {
 void RenderFrameHostImpl::SendCosmosMessage(CommonUniverse::IPCMsg* pMsg) {
   if (pMsg->m_strId.CompareNoCase(_T("OPEN_URL")) == 0) {
     OpenURL(pMsg->m_strParam1, pMsg->m_strParam2);
-  } else if (pMsg->m_strId.CompareNoCase(_T("ADD_URL")) == 0) {
+  } else if (pMsg->m_strId.CompareNoCase(_T("ADD_URL")) == 0 ||
+             pMsg->m_strId.CompareNoCase(_T("OPEN_MainWindowURLs")) == 0) {
     USES_CONVERSION;
     CString strURLs = pMsg->m_strParam1;
     WebContents* pContents = content::WebContents::FromRenderFrameHost(this);
