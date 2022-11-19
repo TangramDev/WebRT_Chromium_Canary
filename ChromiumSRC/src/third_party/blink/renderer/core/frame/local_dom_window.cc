@@ -128,6 +128,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
@@ -936,6 +937,14 @@ void LocalDOMWindow::DispatchPagehideEvent(
 
 void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
                                             const String& new_url) {
+  DCHECK(GetFrame());
+  if (GetFrame()->IsMainFrame()) {
+    auto* script_state = ToScriptStateForMainWorld(GetFrame());
+    DCHECK(script_state);
+    SoftNavigationHeuristics* heuristics =
+        SoftNavigationHeuristics::From(*this);
+    heuristics->SawURLChange(script_state, new_url);
+  }
   // https://html.spec.whatwg.org/C/#history-traversal
   EnqueueWindowEvent(*HashChangeEvent::Create(old_url, new_url),
                      TaskType::kDOMManipulation);
@@ -2170,28 +2179,6 @@ void LocalDOMWindow::FinishedLoading(FrameLoader::NavigationFinishState state) {
     cosmos();
 
   if (cosmos_) {
-    Element* mainurlsElem_ = nullptr;
-    HTMLCollection* const mainUrlsElements =
-        document()->getElementsByTagName("mainurls");
-    if (mainUrlsElements != nullptr && mainUrlsElements->length()) {
-      mainurlsElem_ = mainUrlsElements->item(0);
-      String mainurlsHTML = "";
-      if (mainurlsElem_) {
-        HTMLCollection* const urlElements =
-            mainurlsElem_->getElementsByTagName("url");
-        for (Element* element : *urlElements) {
-          // String url = element->innerHTML();
-          AtomicString url = element->getAttribute("url");
-          if (url.IsNull() == false && url != "")
-            mainurlsHTML = mainurlsHTML + url + "|";
-        }
-
-        if (mainurlsHTML.IsNull() == false && mainurlsHTML != "") {
-          cosmos_->openMainWndUrls(mainurlsHTML);
-        }
-      }
-    }
-
     AtomicString extraPrefix = "";
 
     // Use a custom prefix.
@@ -2217,6 +2204,29 @@ void LocalDOMWindow::FinishedLoading(FrameLoader::NavigationFinishState state) {
     if (list->length()) {
       cosmosElem = list->item(0);
       if (cosmosElem) {
+        //  cosmos()->sendMessage("OPEN_MainWindowURLs", "1", "1", "", "", "");
+        //Element* mainurlsElem_ = nullptr;
+        //HTMLCollection* const mainUrlsElements =
+        //    cosmosElem->getElementsByTagName("mainurls");
+        //if (mainUrlsElements->length()) {
+        //  mainurlsElem_ = mainUrlsElements->item(0);
+        //  String mainurlsHTML = "";
+        //  if (mainurlsElem_) {
+        //    HTMLCollection* const urlElements =
+        //        mainurlsElem_->getElementsByTagName("url");
+        //    for (Element* element : *urlElements) {
+        //      cosmos_->openMainWndUrls("1");
+        //      // String url = element->innerHTML();
+        //      AtomicString url = element->getAttribute("url");
+        //      if (url.IsNull() == false && url != "")
+        //        mainurlsHTML = mainurlsHTML + url + "|";
+        //    }
+
+        //    if (mainurlsHTML.IsNull() == false && mainurlsHTML != "") {
+        //      cosmos_->openMainWndUrls(mainurlsHTML);
+        //    }
+        //  }
+        //}
         AtomicString enableConsoleInfo =
             cosmosElem->getAttribute("consoleinfo");
         if (enableConsoleInfo.IsNull() == false && enableConsoleInfo != "" &&

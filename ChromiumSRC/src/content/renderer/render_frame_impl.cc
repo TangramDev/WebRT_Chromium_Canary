@@ -54,6 +54,7 @@
 #include "cc/trees/ukm_manager.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_navigation_policy.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/debug_utils.h"
 #include "content/common/features.h"
 #include "content/common/frame.mojom.h"
@@ -3733,6 +3734,13 @@ void RenderFrameImpl::DidCommitNavigation(
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::didCommitProvisionalLoad",
                "id", routing_id_, "url",
                GetLoadingUrl().possibly_invalid_spec());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWaitForDebuggerOnNavigation)) {
+    std::string renderer =
+        base::StrCat({"Renderer url=\"",
+                      TrimURL(GetLoadingUrl().possibly_invalid_spec()), "\""});
+    content::WaitForDebugger(renderer);
+  }
 
   // Generate a new embedding token on each document change.
   GetWebFrame()->SetEmbeddingToken(base::UnguessableToken::Create());
@@ -4346,6 +4354,15 @@ void RenderFrameImpl::DidObserveLoadingBehavior(
     blink::LoadingBehaviorFlag behavior) {
   for (auto& observer : observers_)
     observer.DidObserveLoadingBehavior(behavior);
+}
+
+void RenderFrameImpl::DidObserveSubresourceLoad(
+    uint32_t number_of_subresources_loaded,
+    uint32_t number_of_subresource_loads_handled_by_service_worker) {
+  for (auto& observer : observers_)
+    observer.DidObserveSubresourceLoad(
+        number_of_subresources_loaded,
+        number_of_subresource_loads_handled_by_service_worker);
 }
 
 void RenderFrameImpl::DidObserveNewFeatureUsage(
