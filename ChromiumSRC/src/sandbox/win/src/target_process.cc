@@ -218,8 +218,8 @@ ResultCode TargetProcess::TransferVariable(const char* name,
   if (!child_var)
     return SBOX_ERROR_CANNOT_FIND_VARIABLE_ADDRESS;
 
-  size_t offset =
-      reinterpret_cast<char*>(child_var) - reinterpret_cast<char*>(module);
+  size_t offset = (size_t)(reinterpret_cast<char*>(child_var) -
+                           reinterpret_cast<char*>(module));
   child_var = reinterpret_cast<char*>(MainModule()) + offset;
 #endif
 
