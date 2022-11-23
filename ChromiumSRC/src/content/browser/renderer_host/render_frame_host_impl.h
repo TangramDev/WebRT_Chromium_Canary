@@ -45,7 +45,6 @@
 #include "content/browser/buckets/bucket_context.h"
 #include "content/browser/can_commit_status.h"
 #include "content/browser/network/cross_origin_opener_policy_reporter.h"
-#include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/browsing_context_state.h"
@@ -252,6 +251,7 @@ class FileSystemManagerImpl;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
+class PrerenderCancellationReason;
 class IdleManagerImpl;
 class NavigationEarlyHintsManager;
 class NavigationRequest;
@@ -826,7 +826,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The most recent non-net-error URL to commit in this frame.  In almost all
   // cases, use GetLastCommittedURL instead.
-  const GURL& last_successful_url() { return last_successful_url_; }
+  const GURL& last_successful_url() const { return last_successful_url_; }
 
   // The current URL of the document in the renderer process. Note that this
   // includes URL updates due to document.open() (where it will be updated to
@@ -848,9 +848,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return renderer_url_info_.was_loaded_from_load_data_with_base_url;
   }
 
-  const base::UnguessableToken& anonymous_iframes_nonce() const {
+  const base::UnguessableToken& credentialless_iframes_nonce() const {
     DCHECK(is_main_frame() || IsFencedFrameRoot());
-    return anonymous_iframes_nonce_;
+    return credentialless_iframes_nonce_;
   }
 
   // Saves the URLs and other URL-related information used in the renderer.
@@ -908,7 +908,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // current contents of this frame. This is the primary entry point for
   // determining if a navigation to `dest_url_info` should stay in this
   // RenderFrameHost's SiteInstance.
-  bool IsNavigationSameSite(const UrlInfo& dest_url_info);
+  bool IsNavigationSameSite(const UrlInfo& dest_url_info) const;
 
   // Returns |frame_origin| if this frame is the top (i.e. root) frame in the
   // frame tree. Otherwise, it returns the top frame's origin.
@@ -916,15 +916,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const url::Origin& frame_origin) const;
 
   // Computes the IsolationInfo for this frame to `destination`. Set
-  // `is_anonymous` to true if the navigation will be loaded as anonymous
-  // document (note that the navigation might be committing an anonymous
-  // document even if the document currently loaded in this RFH is not
-  // anonymous, and vice versa).
-  // Populate `fenced_frame_nonce_for_navigation` with
+  // `is_credentialless` to true if the navigation will be loaded as a
+  // credentialless document (note that the navigation might be committing a
+  // credentialless document even if the document currently loaded in this RFH
+  // is not credentialless, and vice versa). Populate
+  // `fenced_frame_nonce_for_navigation` with
   // `NavigationRequest::ComputeFencedFrameNonce()`.
   net::IsolationInfo ComputeIsolationInfoForNavigation(
       const GURL& destination,
-      bool is_anonymous,
+      bool is_credentialless,
       absl::optional<base::UnguessableToken> fenced_frame_nonce_for_navigation);
 
   // Computes the IsolationInfo for this frame to |destination|.
@@ -932,13 +932,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Computes the IsolationInfo that should be used for subresources, if
   // |main_world_origin_for_url_loader_factory| is committed to this frame. The
-  // boolean `is_anonymous` specifies whether this frame will commit an
-  // anonymous document.
+  // boolean `is_credentialless` specifies whether this frame will commit an
+  // credentialless document.
   // Populate `fenced_frame_nonce_for_navigation` with
   // `NavigationRequest::ComputeFencedFrameNonce()`.
   net::IsolationInfo ComputeIsolationInfoForSubresourcesForPendingCommit(
       const url::Origin& main_world_origin_for_url_loader_factory,
-      bool is_anonymous,
+      bool is_credentialless,
       absl::optional<base::UnguessableToken> fenced_frame_nonce_for_navigation);
 
   // Computes site_for_cookies for this frame. A non-empty result denotes which
@@ -2058,11 +2058,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // frame is in, which destroys this frame.
   // Returns true if a prerender was canceled. Does nothing and returns false if
   // `this` is not prerendered.
-  bool CancelPrerendering(PrerenderFinalStatus status);
+  bool CancelPrerendering(const PrerenderCancellationReason& reason);
   // Called by MojoBinderPolicyApplier when it receives a kCancel interface.
   void CancelPrerenderingByMojoBinderPolicy(const std::string& interface_name);
 
-  // Prerender2:
   // Called when the Activate IPC is sent to the renderer. Puts the
   // MojoPolicyBinderApplier in "loose" mode via PrepareToGrantAll() until
   // DidActivateForPrerending() is called.
@@ -2104,7 +2103,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return required_csp_.get();
   }
 
-  bool IsAnonymous() const override;
+  bool IsCredentialless() const override;
 
   bool is_fenced_frame_root_originating_from_opaque_url() const {
     return is_fenced_frame_root_originating_from_opaque_url_;
@@ -2258,8 +2257,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          bool has_user_gesture,
                          absl::optional<blink::scheduler::TaskAttributionId>
                              soft_navigation_heuristic_task_id) override;
-  void NavigateToNavigationApiKey(const std::string& key,
-                                  bool has_user_gesture) override;
+  void NavigateToNavigationApiKey(
+      const std::string& key,
+      bool has_user_gesture,
+      absl::optional<blink::scheduler::TaskAttributionId> task_id) override;
   void UpdateTitle(const absl::optional<::std::u16string>& title,
                    base::i18n::TextDirection title_direction) override;
   void UpdateUserActivationState(
@@ -2635,7 +2636,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // For navigations, populate `fenced_frame_nonce_for_navigation` with
   // `NavigationRequest::ComputeFencedFrameNonce()`.
   absl::optional<base::UnguessableToken> ComputeNonce(
-      bool is_anonymous,
+      bool is_credentialless,
       absl::optional<base::UnguessableToken> fenced_frame_nonce_for_navigation);
 
   // Return the frame immediately preceding this RenderFrameHost in its parent's
@@ -2746,6 +2747,20 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // This method must be called when navigating away from the current
   // document.
   void SendAllPendingBeaconsOnNavigation();
+
+  // Sets `is_initial_empty_document_` to false.
+  void SetNotInitialEmptyDocument() { is_initial_empty_document_ = false; }
+
+  // Returns false if this document not the initial empty document, or if the
+  // current document's input stream has been opened with document.open(),
+  // causing the document to lose its "initial empty document" status. For more
+  // details, see the definition of `is_initial_empty_document_`.
+  bool is_initial_empty_document() const { return is_initial_empty_document_; }
+
+  // Sets `is_initial_empty_document_` to
+  // false. Must only be called after the current document's input stream has
+  // been opened with document.open().
+  void DidOpenDocumentInputStream() { is_initial_empty_document_ = false; }
 
   enum class FencedFrameStatus {
     kNotNestedInFencedFrame,
@@ -2973,15 +2988,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // For navigations, |frame_origin| is the origin being navigated to. For
   // subresources, |frame_origin| is the value of |last_committed_origin_|. The
-  // boolean `anonymous` specifies whether this resource should be loaded with
-  // the restrictions of an anonymous iframe.
+  // boolean `credentialless` specifies whether this resource should be loaded
+  // with the restrictions of a credentialless iframe.
   //
   // For navigations, populate `fenced_frame_nonce_for_navigation` with
   // `NavigationRequest::ComputeFencedFrameNonce()`.
   net::IsolationInfo ComputeIsolationInfoInternal(
       const url::Origin& frame_origin,
       net::IsolationInfo::RequestType request_type,
-      bool is_anonymous,
+      bool is_credentialless,
       absl::optional<base::UnguessableToken> fenced_frame_nonce_for_navigation);
 
   // Returns whether or not this RenderFrameHost is a descendant of |ancestor|.
@@ -3633,6 +3648,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // to call them on a speculative frame.  One such example is
   // JavaScriptExecuteRequestInIsolatedWorld.
   void AssertNonSpeculativeFrame() const;
+
+  // Asserts that the BrowserContext (e.g. Profile in the //chrome layer) of
+  // this frame hasn't started shutting down.  The owner of the BrowserContext
+  // is responsible for closing all WebContents before initiating destruction of
+  // the BrowserContext (and closing the WebContents should destroy all the
+  // associated RenderFrameHostImpl objects).
+  void AssertBrowserContextShutdownHasntStarted();
 
   // A feature that blocks back/forward cache is used. Count the usage and evict
   // the entry if necessary.
@@ -4596,6 +4618,24 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // nested within a fenced frame.
   const FencedFrameStatus fenced_frame_status_;
 
+  // Whether this document is the initial about:blank document or the
+  // synchronously committed about:blank document committed at frame creation,
+  // and its "initial empty document"-ness is still true.
+  // This will be false if either of these has happened:
+  // - The RenderFrameHost had committed a cross-document navigation that is
+  //   not the synchronously committed about:blank document per:
+  //   https://html.spec.whatwg.org/multipage/browsers.html#creating-browsing-contexts:is-initial-about:blank
+  // - The document's input stream has been opened with document.open(), per
+  //   https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#opening-the-input-stream:is-initial-about:blank
+  // NOTE: we treat both the "initial about:blank document" and the
+  // "synchronously committed about:blank document" as the initial empty
+  // document. In the future, we plan to remove the synchronous about:blank
+  // commit so that this state will only be true if the frame is on the
+  // "initial about:blank document". See also:
+  // - https://github.com/whatwg/html/issues/6863
+  // - https://crbug.com/1215096
+  bool is_initial_empty_document_ = true;
+
   // Testing callback run in DidStopLoading() regardless of loading state. This
   // is useful for tests that need to detect when newly created frames finish
   // loading about:blank.
@@ -4638,11 +4678,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool check_deletion_for_bug_1276535_ = false;
 
   // Nonce to be used for initializing the storage key and the network isolation
-  // key of anonymous iframes which are children of this page's document.
+  // key of credentialless iframes which are children of this page's document.
   // TODO(https://crbug.com/1287458): Once the ShadowDom implementation of
   // FencedFrame is gone, move this attribute back to PageImpl. See also:
   // https://crbug.com/1262022
-  base::UnguessableToken anonymous_iframes_nonce_ =
+  base::UnguessableToken credentialless_iframes_nonce_ =
       base::UnguessableToken::Create();
 
   // Used for devtools instrumentation and trace-ability. Do not use for

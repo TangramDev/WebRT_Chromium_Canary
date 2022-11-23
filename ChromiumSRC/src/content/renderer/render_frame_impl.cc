@@ -1115,8 +1115,6 @@ void PropagatePageZoomToNewlyAttachedFrame(blink::WebView* web_view,
 void CallClientDeferMediaLoad(base::WeakPtr<RenderFrameImpl> frame,
                               bool has_played_media_before,
                               base::OnceClosure closure) {
-  DCHECK(blink::features::IsPrerender2Enabled());
-
   if (!frame)
     return;
   GetContentClient()->renderer()->DeferMediaLoad(
@@ -6053,7 +6051,7 @@ int RenderFrameImpl::GetEnabledBindings() {
 }
 
 void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
-  render_accessibility_manager_->SetMode(new_mode.mode());
+  render_accessibility_manager_->SetMode(new_mode);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
