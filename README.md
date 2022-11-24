@@ -30,7 +30,7 @@ Unzip the Patch zip you downloaded.</p>
 	
 About <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>
 </h1>
-<h2><p>Each Chromium WebRT Patch contains a file "ChromiumVer.txt" to specify the Tag of the Chromium Project version corresponding to the Patch, for example: 110.0.5430.0.</p>
+<h2><p>Each Chromium WebRT Patch contains a file "ChromiumVer.txt" to specify the Tag of the Chromium Project version corresponding to the Patch, for example: 110.0.5435.0.</p>
 </h2>
 
 
@@ -85,11 +85,11 @@ as shown in the following figure:</p>
 <div align=center id="cmd"><img src="https://user-images.githubusercontent.com/26355688/199431665-1aa299b4-d1ec-4c6d-83ad-865541a214d6.jpg" width="75%"/></div> </p>
 <p>execute the following command:
 
-	$ ..\getbranch 5430.0 Base
+	$ ..\getbranch 5435.0 Base
 </p>
 <p>
 	
-Here, "<ins>110.0.5430.0</ins>" is the Tag value contained in <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>, and "Base" is the branch name of "Base Branch"</p>
+Here, "<ins>110.0.54350.0</ins>" is the Tag value contained in <i>[ChromiumVer.txt](https://github.com/TangramDev/WebRT_Chromium_Canary/blob/main/ChromiumVer.txt)</i>, and "Base" is the branch name of "Base Branch"</p>
 
 <p>Copy the folder "ChromiumSRC\src" (this folder is included in the unzipped folder of Chromium WebRT Patch) to "d:\WebRT\M108\src", execute the following command:
 	
@@ -100,7 +100,7 @@ Here, "<ins>110.0.5430.0</ins>" is the Tag value contained in <i>[ChromiumVer.tx
 
 <h1 align=center>
 
-WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 110.0.x.y</i>(x>=5430, y>=0)
+WebRuntime based on <br/>a <i>Specific Chromium Project Canary Version: 110.0.x.y</i>(x>=5435, y>=0)
 </h1>
 <h2>
 <p>Execute the following command:
