@@ -388,11 +388,6 @@
       },
     },
     {
-      name: "BatchFetchRequests",
-      status: "test",
-      base_feature: "BatchFetchRequests",
-    },
-    {
       // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
       name: "BeforeMatchEvent",
       origin_trial_feature_name: "BeforeMatchEvent",
@@ -600,6 +595,11 @@
     },
     {
       name: "CorsRFC1918",
+    },
+    {
+      name: "CrossFramePerformanceTimeline",
+      status: "test",
+      base_feature: "CrossFramePerformanceTimeline",
     },
     {
       // Allows positioning a positioned element relative to another one.
@@ -1065,6 +1065,7 @@
         "default": "experimental",
       },
       settable_from_internals: true,
+      base_feature: "DocumentPictureInPictureAPI",
     },
     {
       name: "DocumentPolicy",
@@ -1137,6 +1138,9 @@
     // before M102. See crbug.com/1173534.
     {
       name: "ExperimentalWebSnapshots",
+    },
+    {
+      name: "ExposeRenderTimeNonTaoDelayedImage",
     },
     {
       name: "ExtendedTextMetrics",
@@ -1825,6 +1829,7 @@
       name: "NavigationId",
       status: "experimental",
       base_feature: "NavigationId",
+      origin_trial_feature_name: "SoftNavigationHeuristics",
     },
     {
       name: "NavigatorContentUtils",
@@ -2562,6 +2567,7 @@
       status: "experimental",
       depends_on: ["NavigationId"],
       base_feature: "SoftNavigationHeuristics",
+      origin_trial_feature_name: "SoftNavigationHeuristics",
     },
     // An origin trial feature name is required for this, even though it's
     // actually enabled by the more specific trial. Having these as separate
@@ -2665,6 +2671,12 @@
       status: "stable",
     },
     {
+      // crbug.com/1393223
+      name: "SvgContainersRejectSvgInDisplayContents",
+      status: "stable",
+      base_feature: "SvgContainersRejectSvgInDisplayContents",
+    },
+    {
       name: "SVGTextNG",
       depends_on: ["LayoutNG"],
       status: "stable"
@@ -2728,13 +2740,6 @@
       name: "ThirdPartyStoragePartitioning",
       status: "experimental",
       browser_process_read_write_access: true,
-    },
-    {
-      // Forces same-process display:none cross-origin iframes to be throttled
-      // in the same manner that OOPIFs are.
-      name: "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
-      status: "experimental",
-      base_feature: "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",

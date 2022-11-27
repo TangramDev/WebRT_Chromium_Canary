@@ -1645,7 +1645,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   // Destroying NavigationRequests may call into delegates/observers,
   // so we do it early while |this| object is still in a sane state.
-  ResetNavigationRequests();
+  ResetOwnedNavigationRequests(
+      NavigationDiscardReason::kRenderFrameHostDestruction);
 
   // Release the WebUI instances before all else as the WebUI may accesses the
   // RenderFrameHost during cleanup.
@@ -3063,7 +3064,7 @@ void RenderFrameHostImpl::RenderProcessGone(
     owned_render_widget_host_->RendererExited();
 
   // The renderer process is gone, so this frame can no longer be loading.
-  ResetNavigationRequests();
+  ResetOwnedNavigationRequests(NavigationDiscardReason::kRenderProcessGone);
   ResetLoadingState();
 
   // Any future UpdateState or UpdateTitle messages from this or a recreated
@@ -4230,8 +4231,8 @@ void RenderFrameHostImpl::Detach() {
   // and the speculative / pending commit RenderFrameHost (which is still
   // strongly owned by the RenderFrameHostManager via unique_ptr) will be torn
   // down then. If we do proceed, this ends up with a use-after-free, since
-  // StartPendingDeletionOnSubtree() will ResetNavigationsForPendingDeletion(),
-  // which deletes `this`.
+  // StartPendingDeletionOnSubtree() will call
+  // ResetAllNavigationsInSubtreeForPendingDeletion(), which deletes `this`.
   if (lifecycle_state() == LifecycleStateImpl::kSpeculative ||
       lifecycle_state() == LifecycleStateImpl::kPendingCommit) {
     return;
@@ -4316,7 +4317,8 @@ void RenderFrameHostImpl::DidFocusFrame() {
   if (!IsActive())
     return;
 
-  delegate_->SetFocusedFrame(frame_tree_node_, GetSiteInstance()->group());
+  DCHECK(owner_);
+  owner_->SetFocusedFrame(GetSiteInstance()->group());
 }
 
 void RenderFrameHostImpl::DidCallFocus() {
@@ -4629,7 +4631,16 @@ NavigationRequest* RenderFrameHostImpl::GetSameDocumentNavigationRequest(
              : request->second.get();
 }
 
-void RenderFrameHostImpl::ResetNavigationRequests() {
+void RenderFrameHostImpl::ResetOwnedNavigationRequests(
+    NavigationDiscardReason reason) {
+  if (base::FeatureList::IsEnabled(kQueueNavigationsWhileWaitingForCommit)) {
+    // With navigation queueing, pending commit navigations shouldn't get
+    // canceled, unless the FrameTreeNode, RenderFrameHost, or renderer process
+    // is gone/will be gone soon.
+    CHECK(reason == NavigationDiscardReason::kRenderProcessGone ||
+          reason == NavigationDiscardReason::kWillRemoveFrame ||
+          reason == NavigationDiscardReason::kRenderFrameHostDestruction);
+  }
   // Move the NavigationRequests to new maps first before deleting them. This
   // avoids issues if a re-entrant call is made when a NavigationRequest is
   // being deleted (e.g., if the process goes away as the tab is closing).
@@ -8548,7 +8559,7 @@ void RenderFrameHostImpl::SetBeforeUnloadTimeoutDelayForTesting(
 void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
   DCHECK(IsPendingDeletion());
 
-  ResetNavigationsForPendingDeletion();
+  ResetAllNavigationsInSubtreeForPendingDeletion();
 
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
     for (FrameTreeNode* node : frame_tree()->SubtreeNodes(child_frame.get())) {
@@ -8631,10 +8642,12 @@ void RenderFrameHostImpl::PendingDeletionCheckCompletedOnSubtree() {
   }
 }
 
-void RenderFrameHostImpl::ResetNavigationsForPendingDeletion() {
-  for (auto& child : children_)
-    child->current_frame_host()->ResetNavigationsForPendingDeletion();
-  ResetNavigationRequests();
+void RenderFrameHostImpl::ResetAllNavigationsInSubtreeForPendingDeletion() {
+  for (auto& child : children_) {
+    child->current_frame_host()
+        ->ResetAllNavigationsInSubtreeForPendingDeletion();
+  }
+  ResetOwnedNavigationRequests(NavigationDiscardReason::kWillRemoveFrame);
   // TODO(https://crbug.com/1220337): This has an interesting interaction with
   // the experimental implementations of navigation queueing: if the speculative
   // RenderFrameHost is in pending commit when a new navigation tries to start,
@@ -8644,7 +8657,7 @@ void RenderFrameHostImpl::ResetNavigationsForPendingDeletion() {
   // clobbers the navigation request that was specifically queueing...
   frame_tree_node_->ResetNavigationRequest(
       NavigationDiscardReason::kWillRemoveFrame);
-  frame_tree_node_->render_manager()->CleanUpNavigation(
+  frame_tree_node_->render_manager()->DiscardSpeculativeRFH(
       NavigationDiscardReason::kWillRemoveFrame);
 }
 
@@ -10330,8 +10343,6 @@ void RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy(
   // A prerendered page is identified by its root FrameTreeNode id, so if this
   // RenderFrameHost is in any way embedded, we need to iterate up to the
   // prerender root.
-  // TODO(https://crbug.com/1363996): Move the devtools logic to
-  // PrerenderHostRegistry, as it knows the detailed cancellation reason now.
   FrameTreeNode* outermost_frame =
       GetOutermostMainFrameOrEmbedder()->frame_tree_node();
   PrerenderHost* prerender_host =
@@ -10347,19 +10358,6 @@ void RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy(
   // prerendering, as it could mean an interface request is never resolved for
   // an active page.
   DCHECK(canceled);
-
-  FrameTreeNode* prerender_initiator_frame = FrameTreeNode::GloballyFindByID(
-      prerender_host->initiator_frame_tree_node_id());
-  // The prerender initiator frame is used to report the cancellation to
-  // DevTools. When a prerender is canceled, we use the prerender initiator
-  // frame's DevTools agent instead of the cancelled prerendered frame's. This
-  // is because DevTools agent gets attached to a frame when it becomes active,
-  // so a canceled prerendered frame won't have a Devtools agent attached.
-  if (prerender_initiator_frame) {
-    devtools_instrumentation::DidCancelPrerender(
-        prerender_host->prerendering_url(), prerender_initiator_frame,
-        PrerenderFinalStatus::kMojoBinderPolicy, interface_name);
-  }
 }
 
 void RenderFrameHostImpl::RendererWillActivateForPrerendering() {
