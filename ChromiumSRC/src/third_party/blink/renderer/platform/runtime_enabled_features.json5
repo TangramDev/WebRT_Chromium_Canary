@@ -712,7 +712,7 @@
         // http://crbug.com/1276900
         name: "CSSInitialLetter",
         depends_on: ["LayoutNG"],
-        status: "test",
+        status: "experimental",
     },
     {
       name: "CSSLastBaseline",
@@ -1605,6 +1605,15 @@
       depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
       status: "stable",
       base_feature: "LayoutNGPrinting",
+    },
+    {
+      // Avoid UpdateLogicalWidth() and UpdateLogicalHeight() in LayoutReplaced
+      // subclasses.
+      // It's a part of "stop-copying-back" project. crbug.com/1353190
+      name: "LayoutNGReplacedNoBoxSetters",
+      depends_on: ["LayoutNGPrinting"],
+      status: "stable",
+      base_feature: "LayoutNGReplacedNoBoxSetters",
     },
     {
       name: "LayoutNGSubgrid",
