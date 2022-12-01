@@ -2614,6 +2614,27 @@ void RenderFrameImpl::CommitNavigation(
   DCHECK(navigation_client_impl_);
   DCHECK(!blink::IsRendererDebugURL(common_params->url));
   DCHECK(!NavigationTypeUtils::IsSameDocument(common_params->navigation_type));
+
+  // begin Add by TangramTeam
+  switch (common_params->navigation_type) {
+    case blink::mojom::NavigationType::RELOAD:
+    case blink::mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL: {
+      blink::Cosmos* pCosmos = (blink::Cosmos*)GetWebFrame()->GetWebRT();
+      if (pCosmos) {
+        if (pCosmos->m_mapWebRTGalaxy.size()) {
+          if (frame_ && !frame_->IsLoading())
+            GetFrameHost()->DidStopLoading();
+          return;
+        }
+        // pCosmos->sendMessage("RELOADWEBPAGE", "", "", "", "", "");
+        // pCosmos->Close();
+      }
+    } break;
+    default:
+      break;
+  }
+  // end Add by TangramTeam
+
   // `origin_to_commit` must only be set on failed navigations.
   CHECK(!commit_params->origin_to_commit);
   LogCommitHistograms(commit_params->commit_sent, is_main_frame_);
@@ -3483,6 +3504,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
     const blink::WebFrameOwnerProperties& frame_owner_properties,
     blink::FrameOwnerElementType frame_owner_element_type,
     blink::WebPolicyContainerBindParams policy_container_bind_params,
+    ukm::SourceId document_ukm_source_id,
     FinishChildFrameCreationFn finish_creation) {
   // Tracing analysis uses this to find main frames when this value is
   // MSG_ROUTING_NONE, and build the frame tree otherwise.
@@ -3539,7 +3561,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
       associated_interface_provider.InitWithNewEndpointAndPassReceiver(), scope,
       name.Utf8(), frame_unique_name, is_created_by_script, frame_policy,
       blink::mojom::FrameOwnerProperties::From(frame_owner_properties),
-      frame_owner_element_type);
+      frame_owner_element_type, document_ukm_source_id);
 
   // Create the RenderFrame and WebLocalFrame, linking the two.
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
@@ -5085,9 +5107,6 @@ void RenderFrameImpl::BeginNavigation(
   // (we currently do that in DocumentLoader), all the empty checks can be
   // removed, since they already account for an empty url.
 
-  // Blink is asking whether to navigate to a new URL.
-  // This is fine normally, except if we're showing UI from one security
-  // context and they're trying to navigate to a different context.
   const GURL& url = info->url_request.Url();
   TRACE_EVENT2("navigation", "RenderFrameImpl::BeginNavigation", "url",
                url.possibly_invalid_spec(), "navigation_type",
@@ -5201,10 +5220,10 @@ void RenderFrameImpl::BeginNavigation(
     }
   }
 
-  if (IsTopLevelNavigation(frame_) && url.SchemeIsHTTPOrHTTPS() &&
+  if (frame_->IsOutermostMainFrame() && url.SchemeIsHTTPOrHTTPS() &&
       !url.is_empty() &&
       base::FeatureList::IsEnabled(kSpeculativeServiceWorkerStartup)) {
-    frame_->WillPotentiallyStartNavigation(url);
+    frame_->WillPotentiallyStartOutermostMainFrameNavigation(url);
   }
 
   if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab) {

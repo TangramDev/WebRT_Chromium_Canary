@@ -366,7 +366,7 @@
       status: "experimental",
       origin_trial_feature_name: "BackForwardCacheNotRestoredReasons",
       base_feature: "BackForwardCacheSendNotRestoredReasons",
-      base_feature_status: "disabled",
+      base_feature_status: "enabled",
       copied_from_base_feature_if: "overridden",
       public: true,
     },
@@ -819,12 +819,6 @@
     {
       name: "CSSPositionStickyStaticScrollPosition",
       status: "test",
-    },
-    {
-      // Match input elements which have been autofilled by user agent.
-      // https://html.spec.whatwg.org/multipage/semantics-other.html#selector-autofill
-      name: "CSSPseudoAutofill",
-      status: "experimental",
     },
     {
       name: "CSSPseudoDir",
@@ -1661,6 +1655,10 @@
       status: "test",
     },
     {
+      name: "LCPMouseoverHeuristics",
+      base_feature: "LCPMouseoverHeuristics"
+    },
+    {
       name: "LCPMultipleUpdatesPerElement",
       base_feature: "LCPMultipleUpdatesPerElement"
     },
@@ -2271,7 +2269,7 @@
       // User-Agent string.
       name: "ReduceUserAgentAndroidVersionDeviceModel",
       depends_on: ["ReduceUserAgentMinorVersion"],
-      status: {"Android": "experimental"},
+      status: {"Android": "stable"},
       base_feature: "ReduceUserAgentAndroidVersionDeviceModel",
     },
     // If enabled, the minor version of the User-Agent string will be reduced.
@@ -2336,6 +2334,11 @@
       name: "RtcAudioJitterBufferMaxPackets",
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
+    },
+    {
+      name: "RTCEncodedVideoFrameClone",
+      status: "experimental",
+      base_feature: "RTCEncodedVideoFrameClone",
     },
     // Enables the use of the RTCIceTransport with extensions.
     {
@@ -2583,6 +2586,10 @@
     },
     {
       name: "SpeculationRulesFetchFromHeader"
+    },
+    {
+      name: "SpeculationRulesPointerDownHeuristics",
+      base_feature: "SpeculationRulesPointerDownHeuristics"
     },
     {
       name: "SpeculationRulesPointerHoverHeuristics",
