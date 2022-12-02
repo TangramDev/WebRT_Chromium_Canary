@@ -712,7 +712,8 @@
         // http://crbug.com/1276900
         name: "CSSInitialLetter",
         depends_on: ["LayoutNG"],
-        status: "experimental",
+        status: "stable",
+        base_feature: "CSSInitialLetter",
     },
     {
       name: "CSSLastBaseline",
@@ -795,7 +796,7 @@
     },
     {
       name: "CSSOverflowForReplacedElements",
-      status: "test",
+      status: "stable",
       base_feature: "CSSOverflowForReplacedElements",
       copied_from_base_feature_if: "overridden",
     },
@@ -1315,10 +1316,6 @@
       name: "FontAccess",
       base_feature: "FontAccess",
       status: {"Android": "", "default": "stable"},
-    },
-    {
-      name: "FontPalette",
-      status: "stable",
     },
     {
       name: "FontSrcLocalMatching",
@@ -2587,7 +2584,7 @@
     // was enabled.
     {
       name: "SpeculationRules",
-      implied_by: ["SpeculationRulesPrefetchProxy", "SpeculationRulesPrefetchWithSubresources", "Prerender2", "SpeculationRulesDocumentRules"],
+      implied_by: ["SpeculationRulesPrefetchProxy", "SpeculationRulesPrefetchWithSubresources", "Prerender2", "SpeculationRulesDocumentRules", "SpeculationRulesRelativeToDocument"],
       origin_trial_feature_name: "SpeculationRules__DONOTUSE",
     },
     {
@@ -2620,6 +2617,9 @@
     {
       name: "SpeculationRulesReferrerPolicyKey",
       base_feature: "SpeculationRulesReferrerPolicyKey",
+    },
+    {
+      name: "SpeculationRulesRelativeToDocument",
     },
     {
       name: "SrcsetMaxDensity",
