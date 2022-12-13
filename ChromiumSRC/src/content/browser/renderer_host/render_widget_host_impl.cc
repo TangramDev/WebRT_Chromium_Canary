@@ -883,6 +883,8 @@ void RenderWidgetHostImpl::WasShown(
 
   // If we navigated in background, clear the displayed graphics of the
   // previous page before going visible.
+  // TODO(crbug.com/1396336): Checking if there is a content rendering timeout
+  // running isn't ideal for seeing if the tab navigated in the background.
   ForceFirstFrameAfterNavigationTimeout();
   RestartInputEventAckTimeoutIfNecessary();
 
@@ -2381,10 +2383,14 @@ bool RenderWidgetHostImpl::IsKeyboardLocked() const {
   return view_ ? view_->IsKeyboardLocked() : false;
 }
 
+bool RenderWidgetHostImpl::IsContentRenderingTimeoutRunning() const {
+  return new_content_rendering_timeout_ &&
+         new_content_rendering_timeout_->IsRunning();
+}
+
 void RenderWidgetHostImpl::GetContentRenderingTimeoutFrom(
     RenderWidgetHostImpl* other) {
-  if (other->new_content_rendering_timeout_ &&
-      other->new_content_rendering_timeout_->IsRunning()) {
+  if (other->IsContentRenderingTimeoutRunning()) {
     new_content_rendering_timeout_->Start(
         other->new_content_rendering_timeout_->GetCurrentDelay());
   }
@@ -3661,8 +3667,7 @@ void RenderWidgetHostImpl::ProgressFlingIfNeeded(base::TimeTicks current_time) {
 }
 
 void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {
-  if (!new_content_rendering_timeout_ ||
-      !new_content_rendering_timeout_->IsRunning()) {
+  if (!IsContentRenderingTimeoutRunning()) {
     return;
   }
   new_content_rendering_timeout_->Stop();

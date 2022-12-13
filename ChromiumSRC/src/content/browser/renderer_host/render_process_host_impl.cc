@@ -2138,7 +2138,7 @@ void RenderProcessHostImpl::CreatePaymentManagerForOrigin(
 void RenderProcessHostImpl::CreateNotificationService(
     GlobalRenderFrameHostId rfh_id,
     const RenderProcessHost::NotificationServiceCreatorType creator_type,
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     mojo::PendingReceiver<blink::mojom::NotificationService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHost* rfh = RenderFrameHost::FromID(rfh_id);
@@ -2149,7 +2149,7 @@ void RenderProcessHostImpl::CreateNotificationService(
     case RenderProcessHost::NotificationServiceCreatorType::kSharedWorker:
     case RenderProcessHost::NotificationServiceCreatorType::kDedicatedWorker: {
       storage_partition_impl_->GetPlatformNotificationContext()->CreateService(
-          this, origin, /*document_url=*/GURL(), weak_document_ptr,
+          this, storage_key, /*document_url=*/GURL(), weak_document_ptr,
           creator_type, std::move(receiver));
       break;
     }
@@ -2157,7 +2157,7 @@ void RenderProcessHostImpl::CreateNotificationService(
       CHECK(rfh);
 
       storage_partition_impl_->GetPlatformNotificationContext()->CreateService(
-          this, origin, rfh->GetLastCommittedURL(), weak_document_ptr,
+          this, storage_key, rfh->GetLastCommittedURL(), weak_document_ptr,
           creator_type, std::move(receiver));
       break;
     }
@@ -3286,8 +3286,7 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
                                     "--jitless");
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kTouchTextEditingRedesign)) {
+  if (base::FeatureList::IsEnabled(ash::features::kTouchTextEditingRedesign)) {
     command_line->AppendSwitchASCII(
         blink::switches::kTouchTextSelectionStrategy,
         blink::switches::kTouchTextSelectionStrategy_Direction);
@@ -3353,7 +3352,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableLogging,
     switches::kDisableBackgroundMediaSuspend,
     switches::kDisableNotifications,
-    switches::kEnableDeJelly,
     switches::kDisableOriginTrialControlledBlinkFeatures,
     switches::kDisablePepper3DImageChromium,
     switches::kDisablePermissionsAPI,
@@ -5425,5 +5423,12 @@ void RenderProcessHostImpl::SetOsSupportForAttributionReporting(
     blink::mojom::AttributionOsSupport os_support) {
   GetRendererInterface()->SetOsSupportForAttributionReporting(os_support);
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void RenderProcessHostImpl::NotifyMemoryPressureToRenderer(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  child_process_->OnMemoryPressure(level);
+}
+#endif
 
 }  // namespace content
