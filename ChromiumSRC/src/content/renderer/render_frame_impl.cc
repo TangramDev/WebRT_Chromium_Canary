@@ -80,7 +80,6 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/public/renderer/window_features_converter.h"
 #include "content/renderer/accessibility/aom_content_ax_tree.h"
-#include "content/renderer/accessibility/ax_tree_distiller.h"
 #include "content/renderer/accessibility/ax_tree_snapshotter_impl.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/accessibility/render_accessibility_manager.h"
@@ -1033,6 +1032,11 @@ void FillMiscNavigationParams(
 
   if (commit_params.http_response_code != -1)
     navigation_params->http_status_code = commit_params.http_response_code;
+
+  // Copy the modified runtime features from `commit_params` to send to the
+  // Blink renderer class WebLocalFrameImpl.
+  navigation_params->modified_runtime_features =
+      commit_params.modified_runtime_features;
 
   // Populate the arrays of non-current entries for the window.navigation API.
   auto& entry_arrays = commit_params.navigation_api_history_entry_arrays;
@@ -2248,13 +2252,6 @@ void RenderFrameImpl::SnapshotAccessibilityTree(
   std::move(callback).Run(response);
 }
 
-void RenderFrameImpl::SnapshotAndDistillAXTree(
-    SnapshotAndDistillAXTreeCallback callback) {
-  if (!ax_tree_distiller_)
-    ax_tree_distiller_ = std::make_unique<AXTreeDistiller>(this);
-  ax_tree_distiller_->Distill(std::move(callback));
-}
-
 void RenderFrameImpl::GetSerializedHtmlWithLocalLinks(
     const base::flat_map<GURL, base::FilePath>& url_map,
     const base::flat_map<blink::FrameToken, base::FilePath>& frame_token_map,
@@ -2625,7 +2622,7 @@ void RenderFrameImpl::CommitNavigation(
       break;
   }
   // end Add by TangramTeam
-
+ 
   // `origin_to_commit` must only be set on failed navigations.
   CHECK(!commit_params->origin_to_commit);
   LogCommitHistograms(commit_params->commit_sent, is_main_frame_);
@@ -4398,15 +4395,6 @@ void RenderFrameImpl::DidObserveLayoutShift(double score,
                                             bool after_input_or_scroll) {
   for (auto& observer : observers_)
     observer.DidObserveLayoutShift(score, after_input_or_scroll);
-}
-
-void RenderFrameImpl::DidObserveLayoutNg(uint32_t all_block_count,
-                                         uint32_t ng_block_count,
-                                         uint32_t all_call_count,
-                                         uint32_t ng_call_count) {
-  for (auto& observer : observers_)
-    observer.DidObserveLayoutNg(all_block_count, ng_block_count, all_call_count,
-                                ng_call_count);
 }
 
 void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,

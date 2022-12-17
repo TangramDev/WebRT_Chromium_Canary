@@ -314,6 +314,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
   void BindIndexedDB(
       const blink::StorageKey& storage_key,
+      const GlobalRenderFrameHostId& rfh_id,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) override;
   void BindBucketManagerHost(
       base::WeakPtr<BucketContext> bucket_context,
@@ -331,7 +332,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const GlobalRenderFrameHostId& render_frame_host_id) override;
 
   void SetOsSupportForAttributionReporting(
-      blink::mojom::AttributionOsSupport os_support) override;
+      attribution_reporting::mojom::OsSupport os_support) override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -1072,7 +1073,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Clients that contribute priority to this process.
   base::flat_set<RenderProcessHostPriorityClient*> priority_clients_;
 
-  ChildProcessLauncherPriority priority_;
+  RenderProcessPriority priority_;
 
   // If this is set then the built-in process priority calculation system is
   // ignored, and an externally computed process priority is used. Set to true

@@ -1448,7 +1448,7 @@ void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
   // begin Add by TangramTeam
   HWND hwnd = views::HWNDForWidget(GetWidget());
   if (::IsWindow(hwnd)) {
-      ::SendMessage(hwnd, WM_TABCHANGE, model_index, 0);
+    ::SendMessage(hwnd, WM_TABCHANGE, model_index, 0);
   }
   // end Add by TangramTeam
 }

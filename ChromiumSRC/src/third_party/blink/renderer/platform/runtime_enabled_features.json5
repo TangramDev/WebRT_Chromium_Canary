@@ -594,7 +594,7 @@
     },
     {
       name: "CrossFramePerformanceTimeline",
-      status: "test",
+      status: "experimental",
       base_feature: "CrossFramePerformanceTimeline",
     },
     {
@@ -1208,7 +1208,7 @@
       name: "FedCmIframeSupport",
       depends_on: ["FedCm"],
       public: true,
-      status: "test",
+      status: "stable",
     },
     {
       name: "FedCmMultipleIdentityProviders",
@@ -1557,7 +1557,7 @@
       name: "LayoutMediaNGContainer",
       // This feature doesn't work in the legacy layout.
       depends_on: ["LayoutNGPrinting"],
-      status: "test",
+      status: "stable",
       base_feature: "LayoutMediaNGContainer",
     },
     {
@@ -1887,6 +1887,16 @@
       name: "NotificationTriggers",
       origin_trial_feature_name: "NotificationTriggers",
       status: "experimental",
+    },
+    // Origin trial to experiment with No-Vary-Search in Prefetch Cache
+    // See crbug.com/1378075. Depends on SpeculationRulesPrefetchProxy to be
+    // enabled.
+    // On the browser side, the trial needs features::kPrefetchUseContentRefactor
+    // enabled. If features::kPrefetchUseContentRefactor is disabled, then
+    // the code will behave as if PrefetchNoVarySearch is disabled.
+    {
+      name: "NoVarySearchPrefetch",
+      origin_trial_feature_name: "NoVarySearchPrefetch",
     },
     {
       name: "OffMainThreadCSSPaint",
@@ -2455,7 +2465,8 @@
     {
       name: "SecurePaymentConfirmationOptOut",
       origin_trial_feature_name: "SecurePaymentConfirmationOptOut",
-      origin_trial_allows_third_party: true
+      origin_trial_allows_third_party: true,
+      status: "stable",
     },
     {
       // When a Web application calls getDisplayMedia() and asks for video,
@@ -2490,6 +2501,11 @@
     {
       name: "Serial",
       status: {"Android": "", "default": "stable"},
+    },
+    {
+      name: "ServiceWorkerBypassFetchHandler",
+      origin_trial_feature_name: "ServiceWorkerBypassFetchHandlerForMainResource",
+      public: true,
     },
     {
       name: "ServiceWorkerClientLifecycleState",
@@ -2576,6 +2592,7 @@
     // was enabled.
     {
       name: "SpeculationRules",
+      status: "stable",
       implied_by: ["SpeculationRulesPrefetchProxy", "SpeculationRulesPrefetchWithSubresources", "Prerender2", "SpeculationRulesDocumentRules", "SpeculationRulesRelativeToDocument"],
       origin_trial_feature_name: "SpeculationRules__DONOTUSE",
     },
@@ -2609,15 +2626,13 @@
       origin_trial_feature_name: "SpeculationRulesPrefetchFuture",
       origin_trial_allows_third_party: true,
     },
-    // Origin trial to enable Speculation Rules for access to the prefetch proxy.
-    // https://crbug.com/1190167
     {
       name: "SpeculationRulesPrefetchProxy",
       origin_trial_feature_name: "SpeculationRulesPrefetch",
-      status: {"Android": "stable"},
+      status: "stable",
       base_feature: "SpeculationRulesPrefetchProxy",
       copied_from_base_feature_if: "overridden",
-      implied_by: ["SpeculationRulesPrefetchFuture"],
+      implied_by: ["SpeculationRulesPrefetchFuture", "NoVarySearchPrefetch"],
     },
     {
       "name": "SpeculationRulesPrefetchWithSubresources",
@@ -3225,6 +3240,14 @@
       name: "WebUSBOnServiceWorkers",
       depends_on: ["WebUSB"],
       public: true,
+    },
+    {
+      name: "WebViewXRequestedWithDeprecation",
+      origin_trial_feature_name: "WebViewXRequestedWithDeprecation",
+      origin_trial_allows_insecure: true,
+      origin_trial_os: ["android"],
+      origin_trial_type: "deprecation",
+      status: "experimental",
     },
     {
       name: "WebVTTRegions",

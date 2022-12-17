@@ -519,6 +519,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // Is this a Document Picture in Picture window?
   bool IsPictureInPictureWindow() const;
 
+  void set_is_picture_in_picture_window_for_testing(
+      bool is_picture_in_picture) {
+    is_picture_in_picture_window_ = is_picture_in_picture;
+  }
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -568,11 +573,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<CustomElementRegistry> custom_elements_;
   Member<External> external_;
 
+  Member<NavigationApi> navigation_;
+
   // begin Add by TangramTeam
   mutable Member<Cosmos> cosmos_;
   // end Add by TangramTeam
-
-  Member<NavigationApi> navigation_;
 
   String status_;
   String default_status_;
