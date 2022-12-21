@@ -2182,29 +2182,8 @@ void LocalDOMWindow::FinishedLoading(FrameLoader::NavigationFinishState state) {
     cosmos();
 
   if (cosmos_) {
-    Element* mainurlsElem_ = nullptr;
-    HTMLCollection* const mainUrlsElements =
-        document()->getElementsByTagName("mainurls");
-    if (mainUrlsElements!=nullptr&&mainUrlsElements->length()) {
-      mainurlsElem_ = mainUrlsElements->item(0);
-      String mainurlsHTML = ""; 
-      if (mainurlsElem_) {
-        HTMLCollection* const urlElements =
-            mainurlsElem_->getElementsByTagName("url");
-        for (Element* element : *urlElements) {
-          //String url = element->innerHTML();
-          AtomicString url = element->getAttribute("url");
-          if (url.IsNull() == false && url != "")
-            mainurlsHTML = mainurlsHTML + url + "|";
-        }
-
-        if (mainurlsHTML.IsNull() == false && mainurlsHTML != "") {
-          cosmos_->openMainWndUrls(mainurlsHTML);
-        }
-      }
-    }
-
     AtomicString extraPrefix = "";
+
     // Use a custom prefix.
     HTMLCollection* const extraPrefixElements =
         document()->getElementsByTagName("extraPrefix");
@@ -2228,6 +2207,29 @@ void LocalDOMWindow::FinishedLoading(FrameLoader::NavigationFinishState state) {
     if (list->length()) {
       cosmosElem = list->item(0);
       if (cosmosElem) {
+        //  cosmos()->sendMessage("OPEN_MainWindowURLs", "1", "1", "", "", "");
+        //Element* mainurlsElem_ = nullptr;
+        //HTMLCollection* const mainUrlsElements =
+        //    cosmosElem->getElementsByTagName("mainurls");
+        //if (mainUrlsElements->length()) {
+        //  mainurlsElem_ = mainUrlsElements->item(0);
+        //  String mainurlsHTML = "";
+        //  if (mainurlsElem_) {
+        //    HTMLCollection* const urlElements =
+        //        mainurlsElem_->getElementsByTagName("url");
+        //    for (Element* element : *urlElements) {
+        //      cosmos_->openMainWndUrls("1");
+        //      // String url = element->innerHTML();
+        //      AtomicString url = element->getAttribute("url");
+        //      if (url.IsNull() == false && url != "")
+        //        mainurlsHTML = mainurlsHTML + url + "|";
+        //    }
+
+        //    if (mainurlsHTML.IsNull() == false && mainurlsHTML != "") {
+        //      cosmos_->openMainWndUrls(mainurlsHTML);
+        //    }
+        //  }
+        //}
         AtomicString enableConsoleInfo =
             cosmosElem->getAttribute("consoleinfo");
         if (enableConsoleInfo.IsNull() == false && enableConsoleInfo != "" &&
@@ -2288,6 +2290,8 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
                                 const AtomicString& target,
                                 const String& features,
                                 ExceptionState& exception_state) {
+  // Get the window script is currently executing within the context of.
+  // This is usually, but not necessarily the same as 'this'.
   LocalDOMWindow* entered_window = EnteredDOMWindow(isolate);
 
   if (!IsCurrentlyDisplayedInFrame())
@@ -2384,6 +2388,14 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
           WebFeature::kDOMWindowOpenPositioningFeaturesCrossScreen);
     }
   }
+
+#if BUILDFLAG(IS_ANDROID)
+  // Popup windows are handled just like new tabs on mobile today, but we might
+  // want to change that. https://crbug.com/1364321
+  if (window_features.is_popup) {
+    UseCounter::Count(*entered_window, WebFeature::kWindowOpenPopupOnMobile);
+  }
+#endif
 
   if (!completed_url.IsEmpty() || result.new_window)
     result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);

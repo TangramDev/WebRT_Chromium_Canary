@@ -2622,7 +2622,7 @@ void RenderFrameImpl::CommitNavigation(
       break;
   }
   // end Add by TangramTeam
- 
+
   // `origin_to_commit` must only be set on failed navigations.
   CHECK(!commit_params->origin_to_commit);
   LogCommitHistograms(commit_params->commit_sent, is_main_frame_);

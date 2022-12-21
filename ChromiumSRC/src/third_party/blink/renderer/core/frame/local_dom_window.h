@@ -573,11 +573,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<CustomElementRegistry> custom_elements_;
   Member<External> external_;
 
-  Member<NavigationApi> navigation_;
-
   // begin Add by TangramTeam
   mutable Member<Cosmos> cosmos_;
   // end Add by TangramTeam
+
+  Member<NavigationApi> navigation_;
 
   String status_;
   String default_status_;
