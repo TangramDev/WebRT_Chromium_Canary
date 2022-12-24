@@ -118,10 +118,11 @@ String Cosmos::url() {
 }
 
 void Cosmos::wait(bool bwait) {
-  if (bwait)
+  if (bwait) {
     run_loop_.Run();
-  else
+  } else {
     run_loop_.Quit();
+  }
 }
 //
 // void Cosmos::AddedEventListener(const AtomicString& event_type,
@@ -306,8 +307,9 @@ CosmosWinform* Cosmos::InitWinForm(const String& strFormXml,
   CosmosWinform* form = CosmosWinform::Create("");
   form->cosmos_ = this;
   form->handle_ = (int64_t)form;
-  if (callback)
+  if (callback) {
     mapCallbackFunction_.insert(form->handle_, callback);
+  }
   form->m_pRenderframeImpl = m_pRenderframeImpl;
   m_mapWinForm.insert(form->handle_, form);
 
@@ -333,8 +335,9 @@ CosmosWinform* Cosmos::InitWinForm(Element* elem,
   CosmosWinform* form = CosmosWinform::Create("");
   form->cosmos_ = this;
   form->handle_ = (int64_t)form;
-  if (callback)
+  if (callback) {
     mapCallbackFunction_.insert(form->handle_, callback);
+  }
   form->m_pRenderframeImpl = m_pRenderframeImpl;
   m_mapWinForm.insert(form->handle_, form);
 
@@ -395,8 +398,9 @@ CosmosWinform* Cosmos::createWinForm(Element* elem,
   CosmosWinform* form = CosmosWinform::Create("");
   form->cosmos_ = this;
   form->handle_ = (int64_t)form;
-  if (callback)
+  if (callback) {
     mapCallbackFunction_.insert(form->handle_, callback);
+  }
   form->m_pRenderframeImpl = m_pRenderframeImpl;
   m_mapWinForm.insert(form->handle_, form);
 
@@ -436,8 +440,9 @@ CosmosWinform* Cosmos::createWinForm(const String& strFormXml,
   CosmosWinform* form = CosmosWinform::Create("");
   form->cosmos_ = this;
   form->handle_ = (int64_t)form;
-  if (callback)
+  if (callback) {
     mapCallbackFunction_.insert(form->handle_, callback);
+  }
   form->m_pRenderframeImpl = m_pRenderframeImpl;
   m_mapWinForm.insert(form->handle_, form);
 
@@ -473,8 +478,9 @@ CosmosXobj* Cosmos::createObject(Element* elem,
   var->m_pRenderframeImpl = m_pRenderframeImpl;
   var->cosmos_ = this;
   mapCloudSession_.insert(var->id_, var);
-  if (callback)
+  if (callback) {
     mapCallbackFunction_.insert((__int64)var, callback);
+  }
   if (m_pRenderframeImpl) {
     var->setStr("msgID", "CREATE_CLROBJ");
     var->setStr("objID", "CLROBJ");
@@ -506,8 +512,9 @@ CosmosXobj* Cosmos::createObject(const String& strObjXml,
   var->m_pRenderframeImpl = m_pRenderframeImpl;
   var->cosmos_ = this;
   mapCloudSession_.insert(var->id_, var);
-  if (callback)
+  if (callback) {
     mapCallbackFunction_.insert((__int64)var, callback);
+  }
   if (m_pRenderframeImpl) {
     var->setStr("msgID", "CREATE_CLROBJ");
     var->setStr("objID", "CLROBJ");
@@ -617,8 +624,9 @@ void Cosmos::MdiChildActive(CosmosXobj* xobj) {
       }
       parentmdiform->m_pActiveMDIChild = form;
       AtomicString strAppContents = form->m_strAppContents;
-      if (strAppContents == "" || strAppContents.IsNull())
+      if (strAppContents == "" || strAppContents.IsNull()) {
         strAppContents = "applicationcontents";
+      }
       ExceptionState exception_state(nullptr, ExceptionState::kExecutionContext,
                                      "MdiChildActive", "");
       if (form->m_pContentElement == nullptr) {
@@ -635,9 +643,9 @@ void Cosmos::MdiChildActive(CosmosXobj* xobj) {
                 contentElement->classList().remove({"hidden"}, exception_state);
                 contentElement->classList().add({"show"}, exception_state);
                 form->m_pContentElement = contentElement;
-                if (m_pVisibleContentElement == nullptr)
+                if (m_pVisibleContentElement == nullptr) {
                   m_pVisibleContentElement = contentElement;
-                else {
+                } else {
                   if (m_pVisibleContentElement != contentElement) {
                     m_pVisibleContentElement->classList().remove(
                         {"show"}, exception_state);
@@ -686,8 +694,9 @@ void Cosmos::AllMdiChildRemoved(CosmosXobj* xobj) {
     form = it->value.Get();
     form->m_pActiveMDIChild = nullptr;
     AtomicString strAppContents = form->m_strAppContents;
-    if (strAppContents == "" || strAppContents.IsNull())
+    if (strAppContents == "" || strAppContents.IsNull()) {
       strAppContents = "applicationcontents";
+    }
     if (m_pVisibleContentElement) {
       ExceptionState exception_state(nullptr, ExceptionState::kExecutionContext,
                                      "AllMdiChildRemoved", "");
@@ -793,8 +802,9 @@ void Cosmos::OnMessage(Element* e, CosmosXobj* msg, const String& eventName) {
         if (!!xobjfortarget) {
           xobjfortarget->setWorkElement(elem);
           String strMsgID = e->GetIdAttribute() + "_" + eventName;
-          if (msg)
+          if (msg) {
             xobjfortarget->setSender(msg);
+          }
           xobjfortarget->setMsgID(strMsgID);
           xobjfortarget->DispatchEvent(*blink::CosmosEvent::Create(
               blink::webrt_event_type_names::kCloudmessageforxobj,
@@ -867,9 +877,9 @@ void Cosmos::DispatchXobjEvent(CosmosXobj* xObj,
         if (xobjfortarget == nullptr) {
           AtomicString target = elem->getAttribute("target");
           if (target == "" || target.IsNull()) {
-            if (xObj->grid())
+            if (xObj->grid()) {
               xobjfortarget = (CosmosNode*)xObj->grid();
-            else {
+            } else {
               if (xObj->form()) {
                 xObj->form()->element_ = elem;
                 xObj->form()->setMsgID(ctrlName_ + "_" + eventName);
@@ -909,16 +919,27 @@ void Cosmos::DispatchXobjEvent(CosmosXobj* xObj,
     }
   }
   if (xObj->form() && !bFormMsgProcessed) {
-    HTMLCollection* eventObjlist =
-        xObj->form()->eventElem_->getElementsByTagName(AtomicString(ctrlName_));
-    if (eventObjlist->length()) {
-      xObj->setWorkElement(eventObjlist->item(0));
+    if (xObj->form()->eventElem_) {
+      HTMLCollection* eventObjlist =
+          xObj->form()->eventElem_->getElementsByTagName(
+              AtomicString(ctrlName_));
+      if (eventObjlist->length()) {
+        xObj->setWorkElement(eventObjlist->item(0));
+      }
     }
     xObj->DispatchEvent(*blink::CosmosEvent::Create(
         blink::webrt_event_type_names::kCloudmessageforcloudform, xObj));
-  } else if (xObj->grid() && !bXobjMsgProcessed)
+  } else if (xObj->grid() && !bXobjMsgProcessed) {
+    if (xObj->eventElem_ != nullptr) {
+      HTMLCollection* eventObjlist =
+          xObj->eventElem_->getElementsByTagName(AtomicString(ctrlName_));
+      if (eventObjlist->length()) {
+        xObj->setWorkElement(eventObjlist->item(0));
+      }
+    }
     xObj->DispatchEvent(*blink::CosmosEvent::Create(
         blink::webrt_event_type_names::kCloudmessageforxobj, xObj));
+  }
 }
 
 void Cosmos::ProcessMessage(CosmosXobj* xobj) {
@@ -1014,8 +1035,9 @@ CosmosNode* Cosmos::createCosmosNode(CosmosXobj* xobj) {
   CosmosNode* node = (CosmosNode*)xobj;
   __int64 handle = node->handle_;
   auto itNode = m_mapWebRTNode.find(handle);
-  if (itNode != m_mapWebRTNode.end())
+  if (itNode != m_mapWebRTNode.end()) {
     return itNode->value.Get();
+  }
   node->cosmos_ = this;
   CosmosWinform* parentform = nullptr;
   CosmosWinform* parentmdiform = nullptr;
@@ -1057,8 +1079,9 @@ CosmosNode* Cosmos::createCosmosNode(CosmosXobj* xobj) {
     if (it != m_mapWinForm.end()) {
       parentform = it->value.Get();
       node->m_pParentForm = parentform;
-      if (parentform->m_nMdiwebbindgridhandle == handle)
+      if (parentform->m_nMdiwebbindgridhandle == handle) {
         parentform->m_pWebBindMdiNode = node;
+      }
       parentform->m_mapWebRTGalaxy[Cosmos::S2w(strGalaxyname)] = pGalaxy;
     }
     it = m_mapWinForm.find(xobj->getInt64("parentMDIFormHandle"));
@@ -1094,8 +1117,9 @@ CosmosNode* Cosmos::createCosmosNode(CosmosXobj* xobj) {
       }
     }
     long nodeisform = xobj->getLong("nodeisform");
-    if (nodeisform != 1)
+    if (nodeisform != 1) {
       xobj->setStr("formxml", "");
+    }
     if (m_pRootNode->DocumentFragment_) {
       node->DocumentFragment_ = m_pRootNode->DocumentFragment_;
       String name(base::NumberToString(handle).c_str());
@@ -1174,8 +1198,9 @@ CosmosNode* Cosmos::createCosmosNode(CosmosXobj* xobj) {
                 }
               }
             }
-            if (node->messageElem_ && node->refElem_ && node->eventElem_)
+            if (node->messageElem_ && node->refElem_ && node->eventElem_) {
               break;
+            }
           }
         }
       }
@@ -1185,8 +1210,9 @@ CosmosNode* Cosmos::createCosmosNode(CosmosXobj* xobj) {
         m_pRenderframeImpl =
             WebLocalFrameImpl::FromFrame(DomWindow()->GetFrame())->Client();
       }
-      if (m_pRenderframeImpl)
+      if (m_pRenderframeImpl) {
         m_pRenderframeImpl->SendCosmosMessageEx(node->session_);
+      }
     }
   }
 
@@ -1214,9 +1240,10 @@ CosmosNode* Cosmos::createCosmosNode(CosmosXobj* xobj) {
   }
 
   if (parentform) {
-    if (bNewGalaxy)
+    if (bNewGalaxy) {
       parentform->DispatchEvent(*blink::CosmosEvent::Create(
           blink::webrt_event_type_names::kCosmosgalaxycreated, xobj));
+    }
 
     parentform->DispatchEvent(*blink::CosmosEvent::Create(
         blink::webrt_event_type_names::kXobjcreated, xobj));
@@ -1278,10 +1305,11 @@ CosmosNode* Cosmos::createCosmosWinform(CosmosXobj* xobj) {
 
       for (auto it1 : xobj->session_.m_mapString) {
         if (it1.first != L"sessionid") {
-          if (it1.first == L"gridxml")
+          if (it1.first == L"gridxml") {
             form->session_.m_mapString[L"formxml"] = it1.second;
-          else
+          } else {
             form->session_.m_mapString[it1.first] = it1.second;
+          }
         }
       }
       for (auto it2 : xobj->session_.m_mapLong) {
@@ -1341,16 +1369,19 @@ CosmosNode* Cosmos::getXobj(Element* elem) {
       AtomicString target = elem->getAttribute("target");
       AtomicString galaxy = elem->getAttribute("galaxy");
       AtomicString winNucleus = elem->getAttribute("nucleus");
-      if (galaxy == "" || galaxy.IsNull() == true)
+      if (galaxy == "" || galaxy.IsNull() == true) {
         galaxy = "default";
-      if (winNucleus == "" || winNucleus.IsNull() == true)
+      }
+      if (winNucleus == "" || winNucleus.IsNull() == true) {
         winNucleus = "__viewport_default__";
+      }
       if (target.IsNull() == true || target == "") {
         auto it = m_mapWebRTGalaxy2.find(S2w(galaxy));
         if (it != m_mapWebRTGalaxy2.end()) {
           auto it2 = it->second->m_mapRootNode.find(S2w(winNucleus));
-          if (it2 != it->second->m_mapRootNode.end())
+          if (it2 != it->second->m_mapRootNode.end()) {
             return it2->second;
+          }
           return nullptr;
         }
       } else {
@@ -1371,16 +1402,19 @@ CosmosNode* Cosmos::getXobj(Element* elem, CosmosXobj* grid) {
       AtomicString target = elem->getAttribute("target");
       AtomicString galaxy = elem->getAttribute("galaxy");
       AtomicString winNucleus = elem->getAttribute("nucleus");
-      if (galaxy == "" || galaxy.IsNull() == true)
+      if (galaxy == "" || galaxy.IsNull() == true) {
         galaxy = "default";
-      if (winNucleus == "" || winNucleus.IsNull() == true)
+      }
+      if (winNucleus == "" || winNucleus.IsNull() == true) {
         winNucleus = "__viewport_default__";
+      }
       if (target.IsNull() == true || target == "") {
         auto it = m_mapWebRTGalaxy2.find(S2w(galaxy));
         if (it != m_mapWebRTGalaxy2.end()) {
           auto it2 = it->second->m_mapRootNode.find(S2w(winNucleus));
-          if (it2 != it->second->m_mapRootNode.end())
+          if (it2 != it->second->m_mapRootNode.end()) {
             return it2->second;
+          }
           return nullptr;
         }
       } else {
@@ -1409,8 +1443,9 @@ CosmosNode* Cosmos::getXobj(Element* elem, CosmosXobj* grid) {
 
 CosmosNode* Cosmos::getXobj(const int64_t nodeHandle) {
   auto it = m_mapWebRTNode.find(nodeHandle);
-  if (it != m_mapWebRTNode.end())
+  if (it != m_mapWebRTNode.end()) {
     return it->value;
+  }
   return nullptr;
 }
 
@@ -1418,37 +1453,42 @@ CosmosNode* Cosmos::getXobj(const String& galaxyName,
                             const String& clusterName,
                             const String& gridName) {
   String clusterName_ = clusterName;
-  if (clusterName_ == "" || clusterName_.IsNull() == true)
+  if (clusterName_ == "" || clusterName_.IsNull() == true) {
     clusterName_ = "default";
+  }
   auto it = m_mapWebRTGalaxy2.find(S2w(galaxyName));
   if (it != m_mapWebRTGalaxy2.end()) {
     if (gridName == "" || gridName.IsNull() == true) {
       auto it2 = it->second->m_mapRootNode.find(S2w(clusterName_));
-      if (it2 != it->second->m_mapRootNode.end())
+      if (it2 != it->second->m_mapRootNode.end()) {
         return it2->second;
+      }
       return nullptr;
     }
 
     clusterName_ = clusterName + "__" + gridName;
     auto it2 = it->second->m_mapWebRTNode2.find(S2w(clusterName_));
-    if (it2 != it->second->m_mapWebRTNode2.end())
+    if (it2 != it->second->m_mapWebRTNode2.end()) {
       return it2->second;
+    }
   }
   return nullptr;
 }
 
 CosmosGalaxy* Cosmos::getGalaxy(const String& wndName) {
   auto it = m_mapWebRTGalaxy2.find(S2w(wndName));
-  if (it != m_mapWebRTGalaxy2.end())
+  if (it != m_mapWebRTGalaxy2.end()) {
     return it->second;
+  }
   return nullptr;
 }
 
 CosmosGalaxy* Cosmos::getGalaxy(const int64_t wndHandle) {
   if (wndHandle) {
     auto it = m_mapWebRTGalaxy.find(wndHandle);
-    if (it != m_mapWebRTGalaxy.end())
+    if (it != m_mapWebRTGalaxy.end()) {
       return it->value;
+    }
   }
   return nullptr;
 }
@@ -1523,8 +1563,9 @@ void Cosmos::sendMessage(CosmosXobj* msg,
                          V8ApplicationCallback* callback,
                          bool bwait = false) {
   if (m_pRenderframeImpl) {
-    if (msg == nullptr)
+    if (msg == nullptr) {
       msg = this;
+    }
     msg->setStr("senderid", getid());
     if (callback) {
       String callbackid_ = WTF::CreateCanonicalUUIDString();
@@ -1544,8 +1585,9 @@ void Cosmos::sendMessage(CosmosXobj* msg,
 
 void Cosmos::sendMessage(CosmosXobj* msg) {
   if (m_pRenderframeImpl) {
-    if (msg == nullptr)
+    if (msg == nullptr) {
       msg = this;
+    }
     msg->setStr("senderid", getid());
     m_pRenderframeImpl->SendCosmosMessageEx(msg->session_);
   }
@@ -1559,8 +1601,9 @@ void Cosmos::sendMessage(CosmosXobj* msg) {
 
 void Cosmos::sendMessage(CosmosXobj* msg, V8ApplicationCallback* callback) {
   if (m_pRenderframeImpl) {
-    if (msg == nullptr)
+    if (msg == nullptr) {
       msg = this;
+    }
     msg->setStr("senderid", getid());
     if (callback) {
       String callbackid_ = WTF::CreateCanonicalUUIDString();
@@ -1642,8 +1685,9 @@ void Cosmos::openUrl(const String& url,
 
 CosmosXobj* Cosmos::getNamedItem(const AtomicString& name) const {
   auto it = mapCloudSession_.find(name);
-  if (it != mapCloudSession_.end())
+  if (it != mapCloudSession_.end()) {
     return it->value.Get();
+  }
   return nullptr;
 }
 
